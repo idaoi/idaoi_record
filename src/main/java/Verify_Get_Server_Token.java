@@ -39,13 +39,13 @@ import java.util.*;
 public class Verify_Get_Server_Token extends HttpServlet {  // 继承处理http请求
 
     private static final long serialVersionUID = 1L;//序列化对象版本,确保发送方和接收方的序列化对象版本兼容
-    private static final String secret = "6LeyxMgqAAAAAD94F_z5foW7_i_ihCcAJ-BvHOcp";//谷歌人机验证id
+    private static final String secret = null;//谷歌人机验证id
     private static final String requestUrl = "https://www.recaptcha.net/recaptcha/api/siteverify";// 谷歌国内api
     //  private static final String requestUrl = "https://www.google.com/recaptcha/api/siteverify";
 
     // 初始化极验参数信息
-    private static final String captchaId = "5749e1b876f575f00c0a91eeddd2656c";
-    private static final String captchaKey = "2647e15bfe4b7254e9f6e1d781dc745b";
+    private static final String captchaId = null;
+    private static final String captchaKey = null;
     private static final String domain = "http://gcaptcha4.geetest.com";
 
 
