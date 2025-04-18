@@ -48,6 +48,7 @@ public class Verify_Get_Server_Token extends HttpServlet {  // 继承处理http�
     private static final String captchaKey = null;
     private static final String domain = "http://gcaptcha4.geetest.com";
 
+    // 如果不添加密钥，（密钥为null），则会直接给令牌，只是为了演示，建议自己修改
 
     // 收到post请求
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -98,7 +99,12 @@ public class Verify_Get_Server_Token extends HttpServlet {  // 继承处理http�
                         } else {
                             num = Integer.parseInt(username);
                         }
-                        out_string = reCaptchaValidator(recaptcha_token,  UserHandleClass.getUserIp(request), num);
+                        if (secret==null){
+                            out_string = get_Token(UserHandleClass.getUserIp(request), num);
+                        }
+                        else {
+                            out_string = reCaptchaValidator(recaptcha_token, UserHandleClass.getUserIp(request), num);
+                        }
                         break;
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
@@ -112,13 +118,18 @@ public class Verify_Get_Server_Token extends HttpServlet {  // 继承处理http�
                         } else {
                             num = Integer.parseInt(username);
                         }
-                        // 获取用户验证后前端传过来的验证流水号等参数
-                        String lotNumber = requestData.get("lot_number");
-                        String captchaOutput = requestData.get("captcha_output");
-                        String passToken = requestData.get("pass_token");
-                        String genTime = requestData.get("gen_time");
-                        out_string = geeTestValidator(lotNumber, captchaOutput, passToken, genTime,
-                                UserHandleClass.getUserIp(request), num);// 执行极验处理
+                        if (captchaId==null||captchaKey==null){
+                            out_string = get_Token(UserHandleClass.getUserIp(request), num);
+                        }
+                        else {
+                            // 获取用户验证后前端传过来的验证流水号等参数
+                            String lotNumber = requestData.get("lot_number");
+                            String captchaOutput = requestData.get("captcha_output");
+                            String passToken = requestData.get("pass_token");
+                            String genTime = requestData.get("gen_time");
+                            out_string = geeTestValidator(lotNumber, captchaOutput, passToken, genTime,
+                                    UserHandleClass.getUserIp(request), num);// 执行极验处理
+                        }
                         break;
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
