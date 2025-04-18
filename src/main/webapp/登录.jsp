@@ -125,6 +125,16 @@
         }
 
         function open_recaptcha_popup() { // 打开谷歌人机验证
+            if(renderRecaptcha_sitekey==null){// 如果没有密钥，直接进去，设置这一个入口就行了，极验那边暂且不设
+                let date = {
+                    verify_type: "recaptchaToken",    // 验证类型，传到服务器后根据类型选择处理函数
+                    recaptchaToken: null,//令牌
+                };
+                if (type_open === 1) {
+                    date.username = document.getElementById("username").value;
+                }
+                get_Ajax_Token(date)// 发送请求
+            }
             open_popup("popup_big");
             close_popup("select_popup");
             open_popup("recaptcha_popup");
