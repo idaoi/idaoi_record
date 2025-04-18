@@ -1,0 +1,126 @@
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.big_div {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background-color: rgb(52, 52, 52);
+    flex-direction: column; /* 子元素垂直排列 */
+    align-items: center; /* 水平居中 修改列竖向会使得作用方向改变*/
+    display: flex;
+}
+
+.dark_color_div {
+    position: relative;/* 位置 相对 */
+    background-color: rgb(22, 22, 22);
+    border-radius: 30px; /* 圆角边框 */
+    margin: 5%;
+    display: flex;
+    flex-direction: column; /* 纵向排列 */
+    justify-content: space-around; /* 按钮之间均匀分布 */
+    align-items: center; /* 按钮在容器内居中 */
+    overflow: hidden; /* 超出部分裁剪 */
+}
+
+.down_div {
+    height: 50%;
+    width: 100%;
+    display: flex;
+}
+
+.show_div {
+    height: 25%;
+    width: 100%;
+    padding: 0;
+    display: flex;
+    place-items: center; /* 水平和垂直居中 */
+    font-size: 20px;
+    color: rgb(191, 191, 191);
+    margin: 1%;
+    overflow:hidden;/* 超出部分裁剪 */
+}
+
+.div_data_span {
+    min-height: 20px;
+    min-width: 20px;
+    background-color: rgb(22, 22, 22);
+    white-space: nowrap; /* 禁用文字换行 */
+    text-align: center; /* 文字居中 */
+    width: 70%;
+    padding: 4%;
+    margin-right: 15%;
+    border-radius: 30px; /* 圆角边框 */
+}
+
+.div_label_span {
+    min-height: 20px;
+    min-width: 20px;
+    background-color: rgb(22, 22, 22);
+    white-space: nowrap; /* 禁用文字换行 */
+    text-align: center; /* 文字居中 */
+    width: 10%;
+    padding: 4%;
+    border-radius: 50%; /* 使元素呈现为圆形 */
+}
+
+.show_button {
+    height: 20%;
+    width: 100%;
+    padding: 0;
+    display: flex;
+    place-items: center; /* 水平和垂直居中 */
+    font-size: 25px;
+    color: rgb(191, 191, 191);
+}
+
+.show_button:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgb(32, 32, 32);
+}
+
+.dark_line {
+    position: absolute; /* 绝对定位 */
+    top: 0; /* 从父容器的顶部开始 */
+    left: 5%; /* 将线放置在容器的左边（水平） */
+    width: 1.5px; /* 线的厚度 */
+    height: 100%; /* 线的长度等于父容器的高度 */
+    background-color: rgb(127, 127, 127);
+}
+
+.dark_point {
+    position: absolute; /* 绝对定位 */
+    width: 20px; /* 点的直径 */
+    height: 15px; /* 点的直径 */
+    left: 5%; /* 将点放置在容器的左边（水平） */
+    background-color: rgb(127, 127, 127);
+    border-radius: 50%; /* 使元素呈现为圆形 */
+    transform: translate(-50%, 0%); /* 通过transform调整位置，居中到线上 */
+}
+
+.time_data_span {
+    margin-left: 10%;
+    white-space: nowrap; /* 禁用文字换行 */
+    width: 90%;
+}
+
+.star_shape_span {
+    margin-left: 5%;
+    margin-right: 5%;
+    white-space: nowrap; /* 禁用文字换行 */
+    text-align: center; /* 文字居中 */
+    width: 10%;
+}
+
+.star_data_span {
+    width: 80%;
+    white-space: nowrap; /* 禁用文字换行 */
+}
+
+.italic {
+    font-style: italic; /* 斜体 */
+    text-decoration: underline; /* 下划线 */
+}

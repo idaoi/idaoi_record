@@ -1,0 +1,279 @@
+/*此文件是登录界面样式*/
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.big-div {
+    /*装主界面的div*/
+    height: 100%;
+    width: 100%;
+    background-color: rgb(52, 52, 52);
+    /* 子元素显示在中心 */
+    display: flex;
+    justify-content: center; /*水平*/
+    align-items: center; /*垂直*/
+
+}
+
+.outer-div {
+    /*放图片的大div*/
+    width: 831px;
+    height: 555px;
+    min-width: 831px;
+    min-height: 555px;
+    background-image: url('./images/log_on_background.PNG');
+    background-size: contain;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /*不平铺*/
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+.form_style {
+    width: 100%;
+}
+
+.left-space {
+    /*左半边的div，具体为6.37-》0.43*/
+    flex: 5;
+    height: 100%;
+}
+
+.right-div {
+    /*右半边的div，具体为8.28-》0.56*/
+    flex: 5;
+    height: 100%;
+    padding: 20px; /*元素距边框20像素*/
+    display: flex;
+    align-items: center;
+}
+
+label {
+    /*用户名，密码的标签*/
+    color: rgb(220, 220, 220);
+}
+
+.input_style {
+    /*输入框*/
+    width: 320px;
+    border: none; /* 移除所有边框 */
+    border-bottom: 2px solid rgb(120, 0, 0); /* 添加下边框 */
+    outline: none; /* 移除聚焦时的默认蓝色边框 */
+    background-color: transparent;
+    color: rgb(220, 220, 220);
+    font-size: 50px; /*字体大小*/
+    padding: 10px; /*内边距*/
+    margin: 20px; /*外边距*/
+}
+
+
+.input_style::placeholder {
+    color: rgb(172, 172, 172); /* 空时文字颜色 */
+    text-align: center;
+}
+
+.input_style:focus {
+    border-bottom: 2px solid rgb(200, 16, 16); /* 聚焦时改变下边框颜色 */
+    background-color: transparent;
+}
+
+
+.button_style {
+    /*按钮样式*/
+    width: 320px;
+    padding: 10px; /*内边距*/
+    background-color: transparent;
+    color: rgb(192, 0, 0);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 50px; /*字体大小*/
+    margin: 20px 20px 0;
+
+}
+
+.button_style:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgb(64, 13, 13);
+}
+
+.popup_big { /* 整个弹窗遮罩 */
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    height: 100%;
+    width: 100%;
+    display: none; /*默认不显示*/
+    background-color: rgba(0, 0, 0, 0.4); /*半透明遮罩*/
+}
+
+.close_popup_button{
+    position: absolute; /* 绝对定位 */
+    top: 10px; /* 距离容器顶部的距离，可调整 */
+    right: 10px; /* 距离容器右侧的距离，可调整 */
+    background-color: rgba(64, 64, 64, 0.5); /* 背景 */
+    border: none #aaa;/* 无边框 */
+    border-radius: 12px; /* 圆角边框 */
+    color: #aaa; /* 按钮文字颜色，可设置为更醒目的颜色 */
+    font-size: 40px; /* 按钮文字大小，可调整 */
+    cursor: pointer; /* 鼠标悬停时显示为手型 */
+    padding: 15px 32px; /* 内边距 */
+}
+
+.select_popup { /* 选择一种人机验证方式 */
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    background-color: transparent;
+    display: none; /*默认不显示*/
+}
+
+.select_ {
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    display: flex;
+    width: 500px;
+    height: 250px;
+    min-width: 500px;
+    min-height: 250px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.select_button1 { /* div的按钮*/
+    width: 250px; /* 宽度 */
+    height: 250px; /* 高度 */
+    min-width: 250px;
+    min-height: 250px;
+    flex: 1;
+    background-image: url('./images/reCAPTCHA_logo.png');
+    cursor: pointer;
+    /*不平铺*/
+    background-repeat: no-repeat;
+    position: relative;
+    background-color: rgba(32, 32, 32, 0.5);
+}
+.select_button1:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgba(8, 8, 8, 0.8);
+}
+
+.select_button2 { /* div的按钮*/
+    width: 250px; /* 宽度 */
+    height: 250px; /* 高度 */
+    min-width: 250px;
+    min-height: 250px;
+    flex: 1;
+    background-image: url('./images/GeeTest_logo.png');
+    cursor: pointer;
+    /*不平铺*/
+    background-repeat: no-repeat;
+    position: relative;
+    background-color: rgba(32, 32, 32, 0.5);
+}
+.select_button2:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgba(8, 8, 8, 0.8);
+}
+
+.recaptcha_popup { /* 谷歌人机验证弹窗 */
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    height: 78px;
+    width: 304px;
+    display: none; /*默认不显示*/
+    background-color: aliceblue;
+}
+
+.recaptcha_div {
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    text-align: center;
+}
+
+.geeTest_popup { /* 极验人机验证弹窗 */
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    display: none; /*默认不显示*/
+    background-color: aliceblue;
+}
+.geeTest_div {
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    text-align: center;
+}
+
+.register_popup { /* 注册密码弹窗 */
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    display: none; /*默认不显示*/
+    background-color: transparent; /*透明遮罩*/
+}
+
+.register_ {
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    height: 200px;
+    width: 300px;
+    display: flex; /* 使用 Flexbox 布局 */
+    flex-direction: column; /* 子元素垂直排列 */
+    align-items: center; /* 子元素水平居中 */
+    background-color: rgb(32, 32, 32);
+}
+
+.register_input {
+    display: block; /* 使输入框垂直排列 */
+    width: 200px; /* 宽度 */
+    font-size: 20px; /*字体大小*/
+    margin-top: 25px;
+    border: none; /* 移除所有边框 */
+    border-bottom: 2px solid rgb(120, 0, 0); /* 添加下边框 */
+    color: rgb(220, 220, 220);
+    outline: none; /* 移除聚焦时的默认蓝色边框 */
+    background-color: transparent;
+    padding: 8px; /* 输入框的内边距 */
+}
+
+.register_button {
+    display: block; /* 使注册按钮垂直排列在输入框下方 */
+    width: 80%; /* 宽度 */
+    padding: 10px; /* 按钮的内边距 */
+    background-color: rgb(64, 13, 13);
+    color: rgb(192, 0, 0);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.close_register_button {
+    position: absolute; /* 绝对定位 */
+    top: 2px; /* 距离容器顶部的距离，可调整 */
+    right: 2px; /* 距离容器右侧的距离，可调整 */
+    background-color: transparent; /* 透明背景 */
+    border: none; /* 无边框 */
+    color: #aaa; /* 按钮文字颜色，可设置为更醒目的颜色 */
+    font-size: 25px; /* 按钮文字大小，可调整 */
+    cursor: pointer; /* 鼠标悬停时显示为手型 */
+    padding: 5px 10px; /* 内边距，可根据需要调整 */
+}
