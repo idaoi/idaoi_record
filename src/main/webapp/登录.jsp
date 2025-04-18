@@ -40,8 +40,8 @@
 
     <script src="js/gt4.js"><!-- 极验 --></script>
     <script type="text/javascript">
-        const renderRecaptcha_sitekey = '6LeyxMgqAAAAAPmL0pmsi4231AohgASlAFrFryxh';// 谷歌验证用户端密钥
-        const geeTest_ID = "5749e1b876f575f00c0a91eeddd2656c";// 极验的业务ID
+        const renderRecaptcha_sitekey = null;// 谷歌验证用户端密钥
+        const geeTest_ID = null;// 极验的业务ID
 
         //  谷歌人机验证部分
         function onloadCallback_recaptcha() {// 打开人机验证
