@@ -1,0 +1,316 @@
+
+html, body {
+    height: 100%;
+    margin: 0;
+    min-width: 400px;
+    min-height: 300px;
+}
+
+.big_div {
+    width: calc(100% - 60px);
+    height: 100%;
+    margin: 0;
+    background-color: rgb(52, 52, 52);
+    display: flex;
+}
+
+.sidebar {
+    /*侧边栏样式*/
+    width: 60px;
+    float: left;
+    height: 100%;
+    background-color: rgb(22, 22, 22);
+    z-index: 1; /* 保持在最前端*/
+    top: 0;
+    left: 0;
+    overflow-x: hidden; /*禁用水平滚动*/
+    justify-content: center; /* 水平居中 */
+}
+
+.sidebar_down {
+    /*侧边栏下面的按钮容器样式*/
+    width: 60px; /* 宽度同父容器 */
+    display: flex;
+    position: absolute; /* 绝对定位 */
+    bottom: 0; /* 固定在父容器底部 */
+    left: 0; /* 左侧对齐 */
+    flex-direction: column; /* 列，竖向 */
+    align-items: center; /* 水平居中 修改列竖向会使得作用方向改变*/
+    gap: 10px; /* 按钮之间的间距 */
+}
+
+.button_sidebar {
+    width: 60px; /* 按钮宽度 */
+    padding: 0;
+    background-color: transparent;
+    color: rgb(166, 166, 166);
+    text-align: center;
+    cursor: pointer;
+    font-size: 40px; /* 按钮文字大小*/
+    border: none; /* 无边框 */
+    border-radius: 30px; /* 圆角边框 */
+}
+
+.button_sidebar:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgb(42, 42, 42);
+    /* background-color: rgb(38, 38, 38); */
+}
+
+.button_sidebar_bg {
+    /* 按下后切换的样式 */
+    width: 60px; /* 按钮宽度 */
+    padding: 0;
+    background-color: rgb(38, 38, 38);
+    color: rgb(166, 166, 166);
+    text-align: center;
+    cursor: pointer; /* 鼠标放上变小手 */
+    font-size: 40px; /* 按钮文字大小*/
+    border: none; /* 无边框 */
+    border-radius: 30px 0 0 30px; /* 圆角边框 */
+}
+
+.button_sidebar_bg:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgb(42, 42, 42);
+}
+
+.expandable_sidebar {
+    /*可展开侧边栏样式*/
+    border-radius: 20px; /* 圆角边框 */
+    background: rgb(38, 38, 38);
+    width: 0;
+    height: 100%;
+    float: left;
+    text-align: center;
+    flex-direction: column; /* 列，竖向 */
+    padding-top: 30px; /* 将内容放置在距离顶部30像素的位置 */
+    margin-top: -30px; /* 负边距抵消上一条使得的高度增长 */
+}
+
+
+.button_set_up {
+    /* 设置可展开侧边栏中按钮的样式 */
+    width: 80%; /* 按钮宽度 */
+    padding: 15px 0;
+    background-color: rgb(22, 22, 22);
+    margin: 7px 0;
+    color: rgb(220, 220, 220);
+    cursor: pointer; /* 鼠标放上变小手 */
+    font-size: 25px; /* 按钮文字大小*/
+    text-align: center; /* 文字居中 */
+    border: none; /* 无边框 */
+    border-radius: 10px; /* 圆角边框 */
+    white-space: nowrap; /* 禁用按钮文字换行 */
+    overflow: hidden; /* 隐藏超出部分 */
+}
+
+.button_set_up:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgb(8, 8, 8);
+}
+
+.sidebar_add_div {
+    /* 添加可展开侧边栏中的div */
+    width: 98%; /* 宽度 */
+    margin: 0 1%;
+}
+
+.search_input {
+    /* 搜索框 */
+    height: 35px;
+    width: 90%;
+    padding: 0; /* 有自带边距，设置为0就能完全隐藏了 */
+    font-size: 20px; /*字体大小*/
+    text-align: center; /*文字居中*/
+    margin: 5px 0;
+    border: none; /* 移除所有边框 */
+    outline: none; /* 移除聚焦时的默认蓝色边框 */
+    background-color: rgb(22, 22, 22);
+    color: rgb(220, 220, 220);
+    border-radius: 10px; /* 圆角边框 */
+}
+
+.other_list_Button {
+    /* 其他列表中的按钮 */
+    width: 80%; /* 按钮宽度 */
+    padding: 10px 0;
+    background-color: transparent;
+    display: flex;
+    margin: 7px 6%;
+    color: rgb(220, 220, 220);
+    cursor: pointer;
+    font-size: 25px; /* 按钮文字大小*/
+    text-align: center; /* 文字居中 */
+    border: none; /* 无边框 */
+    white-space: nowrap; /* 禁用按钮文字换行 */
+    overflow: hidden; /* 隐藏超出部分 */
+}
+
+.other_list_Button_left {
+    margin-right: auto;
+    text-align: center;
+    width: 35px;
+    flex-grow: 0.2;
+}
+
+.other_list_Button_centre {
+    margin-right: auto;
+    text-align: left;
+    flex-grow: 0.3;
+}
+
+.other_list_Button_right {
+    margin-left: auto;
+    text-align: right;
+    flex-grow: 0.5;
+}
+
+.content_div {
+    flex-grow: 1; /* 占据剩余部分 */
+    border: none;   /* 移除 iframe 的边框 */
+}
+
+
+.popup_big { /* 整个弹窗遮罩，同登陆界面 */
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    height: 100%;
+    width: 100%;
+    display: none; /*默认不显示*/
+    background-color: rgba(0, 0, 0, 0.4); /*半透明遮罩*/
+}
+
+.popup_small { /* 弹窗 */
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    display: none; /*默认不显示*/
+    background-color: transparent; /*透明遮罩*/
+}
+
+.Change_Password { /* 修改密码弹窗 */
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    height: 300px;
+    width: 300px;
+    display: flex; /* 使用 Flexbox 布局 */
+    flex-direction: column; /* 子元素垂直排列 */
+    align-items: center; /* 子元素水平居中 */
+    background-color: rgb(42, 42, 42);
+}
+
+.alert_popup { /* 提示弹窗 */
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    height: 200px;
+    width: 400px;
+    display: flex; /* 使用 Flexbox 布局 */
+    flex-direction: column; /* 子元素垂直排列 */
+    align-items: center; /* 子元素水平居中 */
+    background-color: rgb(38, 38, 38);
+    border-radius: 30px; /* 圆角边框 */
+}
+
+.alert_popup_text { /* 提示弹窗的数据显示div */
+    position: fixed; /* 固定定位 */
+    top: 50%; /* 距离顶部50% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    width: 350px; /* 宽度 */
+    font-size: 20px; /*字体大小*/
+    color: rgb(174, 174, 174);
+    text-align: center /* 文字居中 */
+}
+
+.password_input {
+    display: block; /* 使输入框垂直排列 */
+    width: 200px; /* 宽度 */
+    font-size: 20px; /*字体大小*/
+    margin-top: 25px;
+    border: none; /* 移除所有边框 */
+    border-bottom: 2px solid rgb(120, 0, 0); /* 添加下边框 */
+    color: rgb(220, 220, 220);
+    outline: none; /* 移除聚焦时的默认蓝色边框 */
+    background-color: transparent;
+    padding: 8px; /* 输入框的内边距 */
+}
+
+.change_button {
+    display: block; /* 使注册按钮垂直排列在输入框下方 */
+    width: 80%; /* 宽度 */
+    padding: 10px; /* 按钮的内边距 */
+    background-color: rgb(64, 13, 13);
+    color: rgb(192, 0, 0);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer; /* 鼠标放上变小手 */
+    margin-top: 10px;
+}
+
+.close_popup_button {
+    position: absolute; /* 绝对定位 */
+    top: 2px; /* 距离容器顶部的距离，可调整 */
+    right: 2px; /* 距离容器右侧的距离，可调整 */
+    background-color: transparent; /* 透明背景 */
+    border: none; /* 无边框 */
+    color: #aaa; /* 按钮文字颜色，可设置为更醒目的颜色 */
+    font-size: 25px; /* 按钮文字大小，可调整 */
+    cursor: pointer; /* 鼠标悬停时显示为手型 */
+    padding: 5px 10px; /* 内边距，可根据需要调整 */
+}
+
+.spinner{
+    border: 10px solid rgb(8, 8, 8); /* 黑色的外圈 */
+    border-radius: 50%; /* 圆形元素 */
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(90deg, #000 50%, #fff 50%);
+    margin: auto;
+    animation: spin 2s linear infinite;/* 应用spin，持续2s 无限循环 */
+}
+
+.spinner::before, .spinner::after {/* 伪元素造两个小圆 */
+    content: '●';
+    position: absolute;/* 绝对定位 */
+    border-radius: 50%;/* 圆形元素 */
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    line-height: 50px; /* 行高等于容器高度 */
+    display: inline-block;
+    transform: translateX(-50%);
+    border: none; /* 无边框 */
+    box-shadow: none;/* 无阴影 */
+    text-align: center;
+    font-size: 30px;
+}
+
+.spinner::before {
+    top: 0;
+    background-color: #000;
+    color: #fff;
+}
+
+.spinner::after {
+    bottom: 0;
+    background-color: #fff;
+    color: #000;
+}
+
+@keyframes spin {/* 两个关键帧 */
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.loading-text {
+    font-size: 18px;
+    color: rgb(174, 174, 174);
+    text-align: center /* 文字居中 */
+}
