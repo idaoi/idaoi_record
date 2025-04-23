@@ -1,9 +1,14 @@
 
-html, body {
+html {
     height: 100%;
     margin: 0;
     min-width: 400px;
     min-height: 300px;
+}
+
+body {
+    height: 100%;
+    margin: 0;
 }
 
 .big_div {
@@ -20,11 +25,7 @@ html, body {
     float: left;
     height: 100%;
     background-color: rgb(22, 22, 22);
-    z-index: 1; /* 保持在最前端*/
-    top: 0;
-    left: 0;
     overflow-x: hidden; /*禁用水平滚动*/
-    justify-content: center; /* 水平居中 */
 }
 
 .sidebar_down {
@@ -84,8 +85,6 @@ html, body {
     float: left;
     text-align: center;
     flex-direction: column; /* 列，竖向 */
-    padding-top: 30px; /* 将内容放置在距离顶部30像素的位置 */
-    margin-top: -30px; /* 负边距抵消上一条使得的高度增长 */
 }
 
 
@@ -116,6 +115,82 @@ html, body {
     margin: 0 1%;
 }
 
+/* 定义滚动条， WebKit 内核 （如 Chrome 和 Safari），我没下火狐*/
+.sidebar_add_div::-webkit-scrollbar { /* 整体 */
+    width: 10px;
+    height: 95%;
+}
+
+.sidebar_add_div::-webkit-scrollbar-button { /* 方向按钮 */
+    width: 0;
+    height: 0;
+}
+
+.sidebar_add_div::-webkit-scrollbar-track { /* 轨道 */
+    background: rgb(55, 55, 55); /* 轨道的背景色 */
+    border-radius: 6px; /* 轨道的圆角 */
+}
+
+.sidebar_add_div::-webkit-scrollbar-thumb { /* 滑块 */
+    background: rgb(24, 24, 24); /* 滑块的背景色 */
+    border-radius: 6px; /* 滑块的圆角 */
+}
+
+summary {
+    width: 92%;
+    color: rgb(191, 191, 191);
+    font-size: 30px;
+    text-align: left;
+    padding-left: 20px;
+    white-space: nowrap; /* 禁用按钮文字换行 */
+
+}
+
+.summary_span {
+    display: inline-block;
+    overflow: hidden; /* 隐藏超出部分 */
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
+    white-space: nowrap; /* 防止文本换行 */
+    width: 70%; /* 限制文字宽度为父容器的70% */
+    vertical-align: bottom; /* 调整垂直对齐方式 */
+    height: 38px;
+    cursor: default; /* 鼠标放上默认显示 */
+}
+
+.summary_before_span { /* 本来用::before 伪元素，为了绑定回调修改为span */
+    cursor: pointer; /* 鼠标放上变小手 */
+}
+
+/* 本来用::before 伪元素，为了绑定回调修改为span */
+/* .summary::before{
+    content: '+';
+    position: relative;
+    left: 75%;
+} */
+
+ul {
+    margin: 1%;
+    padding: 1%;
+}
+
+li {
+    color: rgb(191, 191, 191);
+    font-size: 18px;
+    display: block;
+    text-align: left;
+    padding-left: 45px;
+    cursor: pointer; /* 鼠标放上变小手 */
+}
+
+.High_light_li {
+    color: rgb(255, 230, 0);
+    font-size: 18px;
+    display: block;
+    text-align: left;
+    padding-left: 45px;
+    cursor: pointer; /* 鼠标放上变小手 */
+}
+
 .search_input {
     /* 搜索框 */
     height: 35px;
@@ -123,7 +198,9 @@ html, body {
     padding: 0; /* 有自带边距，设置为0就能完全隐藏了 */
     font-size: 20px; /*字体大小*/
     text-align: center; /*文字居中*/
-    margin: 5px 0;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
     border: none; /* 移除所有边框 */
     outline: none; /* 移除聚焦时的默认蓝色边框 */
     background-color: rgb(22, 22, 22);
@@ -168,7 +245,7 @@ html, body {
 
 .content_div {
     flex-grow: 1; /* 占据剩余部分 */
-    border: none;   /* 移除 iframe 的边框 */
+    border: none; /* 移除 iframe 的边框 */
 }
 
 
@@ -267,20 +344,20 @@ html, body {
     padding: 5px 10px; /* 内边距，可根据需要调整 */
 }
 
-.spinner{
+.spinner {
     border: 10px solid rgb(8, 8, 8); /* 黑色的外圈 */
     border-radius: 50%; /* 圆形元素 */
     width: 100px;
     height: 100px;
     background: linear-gradient(90deg, #000 50%, #fff 50%);
     margin: auto;
-    animation: spin 2s linear infinite;/* 应用spin，持续2s 无限循环 */
+    animation: spin 2s linear infinite; /* 应用spin，持续2s 无限循环 */
 }
 
-.spinner::before, .spinner::after {/* 伪元素造两个小圆 */
+.spinner::before, .spinner::after { /* 伪元素造两个小圆 */
     content: '●';
-    position: absolute;/* 绝对定位 */
-    border-radius: 50%;/* 圆形元素 */
+    position: absolute; /* 绝对定位 */
+    border-radius: 50%; /* 圆形元素 */
     left: 50%;
     width: 50px;
     height: 50px;
@@ -288,7 +365,7 @@ html, body {
     display: inline-block;
     transform: translateX(-50%);
     border: none; /* 无边框 */
-    box-shadow: none;/* 无阴影 */
+    box-shadow: none; /* 无阴影 */
     text-align: center;
     font-size: 30px;
 }
@@ -305,12 +382,18 @@ html, body {
     color: #000;
 }
 
-@keyframes spin {/* 两个关键帧 */
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@keyframes spin { /* 两个关键帧 */
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
+
 .loading-text {
     font-size: 18px;
     color: rgb(174, 174, 174);
-    text-align: center /* 文字居中 */
+    text-align: center; /* 文字居中 */
+    cursor: default; /* 鼠标放上默认显示 */
 }

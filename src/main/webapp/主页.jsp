@@ -23,9 +23,12 @@
 
     <link rel="stylesheet" type="text/css" href="主页界面样式.css">
     <script type="text/javascript">
-        let default_AES_key;
-        let Essays_Index;
-        let all_label;
+        let default_AES_key;// 默认AES密钥
+        let Essays_Index;// 所有随笔索引
+        let All_Label;// 所有标签
+        let Comprehensive_List;//以标签为键，索引列表为值的字典
+        let now_Essays_Index;// 打开随笔页面时，显示的随笔索引
+        let now_Search_Data;// 打开搜索页面时，显示的搜索数据
         function Initialization_interface() {
             // 初始化界面
             // 该页初始化时，再向服务器请求用户基础数据，服务器会发送该账号的部分用户信息表内容，
@@ -36,20 +39,57 @@
             const now = new Date();
             now.setMinutes(now.getMinutes() + 2);// 增加2min作为失效时间
             const formattedTime = now.toISOString(); // ISO 8601 格式：YYYY-MM-DDTHH:mm:ss.sssZ
-            const secret_key = window.parent.server_publicKeyPem.encrypt(window.parent.AES_Key+formattedTime);// 密钥
+            const secret_key = window.parent.server_publicKeyPem.encrypt(window.parent.AES_Key + formattedTime);// 密钥
             let date = {
                 verify_type: "Initialization",
-                secret_key : secret_key,// 密钥
-                signature: signMessage(secret_key,window.parent.client_privateKeyPem),//签名
+                secret_key: secret_key,// 密钥
+                signature: signMessage(secret_key, window.parent.client_privateKeyPem),//签名
             }
             // 获取用户基础数据（默认AES密钥，各种基础值）
             get_Ajax_get_userdata(date);
-
             get_Ajax_heartbeat();// 执行心跳检测
 
             // 打开侧边栏
             sidebar_add_ButtonClick();
-            sidebar_homepage_ButtonClick();
+            sidebar_homepage_ButtonClick();// 进入总览界面
+        }
+
+        function startsWithStr(string, str) {
+            // 检查字符串是否非空，然后比较第一个字符
+            return string.length > 0 && string[0] === str;
+        }
+
+        function set_Comprehensive_List() {// 设置Comprehensive_List
+            let asterisk_num = 0;// 星标数
+            let recycle_num = 0;// 回收数
+            Comprehensive_List = {"未分组": []};
+            for (const label in All_Label) {// 生成每个大标签组
+                Comprehensive_List[All_Label[label]["标签名"]] = [];
+            }
+            for (const index in Essays_Index) {// 所有索引按标签分类
+                let not_match = true;
+                if (startsWithStr(Essays_Index[index]["随笔名"], "♻")) {// 回收不放
+                    recycle_num += 1;
+                } else {
+                    if (startsWithStr(Essays_Index[index]["随笔名"], "⭐")) {
+                        asterisk_num += 1;
+                    }
+                    for (const label in All_Label) {
+                        if (Essays_Index[index]["标签"] === All_Label[label]["标签名"]) {
+                            Comprehensive_List[All_Label[label]["标签名"]].push(Essays_Index[index])
+                            not_match = false;
+                        }
+                    }
+                    if (not_match) {
+                        Comprehensive_List["未分组"].push(Essays_Index[index])
+                    }
+                }
+            }
+            // asterisk_span recycle_span
+            const asterisk_span = document.getElementById('asterisk_span');
+            const recycle_span = document.getElementById('recycle_span');
+            asterisk_span.textContent = asterisk_num;
+            recycle_span.textContent = recycle_num;
         }
 
         function getCookieValue(name) {// 获取cookie中名为name变量的值
@@ -72,6 +112,42 @@
             }
             // 如果没有找到匹配的cookie，则返回null
             return null;
+        }
+
+
+        function encryptString_RSA(str) {// 加密密码
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 2);// 增加2min作为失效时间
+            const formattedTime = now.toISOString(); // ISO 8601 格式：YYYY-MM-DDTHH:mm:ss.sssZ
+            let saltedString = str + "salt_record";// 想了想，服务端打算用个固定盐值，这里本来接收由服务端发来的盐值，后来弃用这一策略。
+            // 使用CryptoJS进行SHA-256哈希，发到服务端后加盐
+            let hash = CryptoJS.SHA256(saltedString).toString(CryptoJS.enc.Hex) + window.parent.AES_Key + formattedTime;
+            return window.parent.server_publicKeyPem.encrypt(hash); // 返回 Base64 编码的加密数据
+        }
+
+        function Change_Password_Submit() {// 修改密码提交
+            // 获取表单元素
+            let old_password = document.getElementById("Old_Password").value;
+            let new_password = document.getElementById("New_Password_1").value;
+            if (new_password !== document.getElementById("New_Password_2").value) {// 新密码输入不同
+                open_alert("新密码不同，请重新输入");
+                return;
+            }
+            if (!isValidPassword(old_password)) {
+                open_alert('旧密码格式错误\n密码长度在8~16之间\n且只能包含字母数字');
+                return;
+            }
+            if (!isValidPassword(new_password)) {
+                open_alert('新密码格式错误\n密码长度在8~16之间\n且只能包含字母数字');
+                return;
+            }
+            // 这里修改密码的验证比较少，可以多加点。
+            let date = {
+                verify_type: "Change_Password",    // 验证类型，传到服务器后根据类型选择处理函数
+                old_password: encryptString_RSA(old_password),// 加密密码
+                new_password: encryptString_RSA(new_password),// 加密密码
+            };
+            get_Ajax_LogSubmit(date);
         }
 
     </script>
@@ -105,15 +181,16 @@
                 data: JSON.stringify(send_data),
                 success: function (response) {//请求成功的回调
                     let state = response["state"];
-                    if (send_data["verify_type"] === "Initialization"){// 初始化
-                        if(state ==="OK"){
-                            // 发来所有标签，默认AES密钥，所有随笔内容，后两者AES加密。
-                            default_AES_key = AES_decrypt(response["default_AES"],window.parent.AES_Key,generateIV(window.parent.AES_Key));
-                            Essays_Index = JSON.parse(AES_decrypt(response["index"],window.parent.AES_Key,generateIV(window.parent.AES_Key)));
-                            all_label = JSON.parse(response["label"]);
+                    if (send_data["verify_type"] === "Initialization") {// 初始化
+                        if (state === "OK") {
+                            // 发来默认AES密钥，所有随笔内容，所有标签，前两者AES加密。
+                            default_AES_key = AES_decrypt(response["default_AES"], window.parent.AES_Key, generateIV(window.parent.AES_Key));
+                            Essays_Index = JSON.parse(AES_decrypt(response["index"], window.parent.AES_Key, generateIV(window.parent.AES_Key)));
+                            All_Label = JSON.parse(response["label"]);
+                            set_Comprehensive_List();// 设置按标签索引的字典。
+                            create_Summary();// 创建可展开的列表
                             close_loading();
-                        }
-                        else {
+                        } else {
                             alert("初始化失败");
                         }
                     }
@@ -161,6 +238,10 @@
     </script>
     <script type="text/javascript">
         let now_open_sidebar = 0 // 当前打开的侧边栏，0无，1设置2添加
+        let currentMatchIndex = -1;// 侧边栏搜索功能显示的是哪个索引
+        let matches = [];// 侧边栏搜索功能匹配的索引列表
+        let last_Match_Str = ""// 侧边栏搜索功能上次的匹配字符串
+
 
         function sidebar_homepage_ButtonClick() {
             // 侧边栏_头像——返回主页的按钮回调
@@ -230,6 +311,41 @@
             }
         }
 
+        function create_Summary() {// 根据Comprehensive_List创建可折叠的列表，
+            const display_list_div = document.getElementById('display_list_div');
+            display_list_div.innerHTML = ''; // 清空所有子元素
+            for (const label in Comprehensive_List) {// 遍历所有项目
+                const details = document.createElement('details');
+                const summary = document.createElement('summary');
+                const span_txt = document.createElement("span");
+                const span_add = document.createElement("span");
+                span_txt.className = "summary_span";
+                span_txt.textContent = label; // 设置 summary 的文本为标签名
+                span_add.className = "summary_before_span";
+                span_add.textContent = "+"; // 设置 summary 的文本为标签名
+                span_add.addEventListener('click', function () {// 点击跳转到随笔
+                    now_Essays_Index = {"随笔号": -1, "标签": label};// 创建一个新的随笔
+                    changeIframeSource("iframe_html/随笔.jsp")// 跳转到随笔
+                })
+                summary.appendChild(span_txt);
+                summary.appendChild(span_add);
+                const ulElement = document.createElement('ul');// 一个大ul放随笔列表
+                for (const data_key in Comprehensive_List[label]) {
+                    const liElement = document.createElement('li');
+                    liElement.textContent = Comprehensive_List[label][data_key]["随笔名"];
+                    liElement.addEventListener('click', function () {// 点击跳转到随笔
+                        now_Essays_Index = Comprehensive_List[label][data_key];
+                        changeIframeSource("iframe_html/随笔.jsp")// 跳转到随笔
+                    })
+                    ulElement.appendChild(liElement);
+                }
+                details.appendChild(summary);
+                details.appendChild(ulElement);
+                display_list_div.appendChild(details);
+            }
+        }
+
+
         // 检查password是否为大于8位的字母数字串（暗文）
         function isValidPassword(password) {
             const passwordRegex = /^[a-zA-Z0-9]{8,16}$/; // 匹配8~16位字母数字的正则表达式
@@ -254,41 +370,6 @@
             document.getElementById("Old_Password").value = "";
             document.getElementById("New_Password_1").value = "";
             document.getElementById("New_Password_2").value = "";
-        }
-
-        function encryptString_RSA(str) {// 加密密码
-            const now = new Date();
-            now.setMinutes(now.getMinutes() + 2);// 增加2min作为失效时间
-            const formattedTime = now.toISOString(); // ISO 8601 格式：YYYY-MM-DDTHH:mm:ss.sssZ
-            let saltedString = str + "salt_record";// 想了想，服务端打算用个固定盐值，这里本来接收由服务端发来的盐值，后来弃用这一策略。
-            // 使用CryptoJS进行SHA-256哈希，发到服务端后加盐
-            let hash = CryptoJS.SHA256(saltedString).toString(CryptoJS.enc.Hex)+window.parent.AES_Key+formattedTime;
-            return window.parent.server_publicKeyPem.encrypt(hash); // 返回 Base64 编码的加密数据
-        }
-
-        function Change_Password_Submit() {// 修改密码提交
-            // 获取表单元素
-            let old_password = document.getElementById("Old_Password").value;
-            let new_password = document.getElementById("New_Password_1").value;
-            if (new_password !== document.getElementById("New_Password_2").value) {// 新密码输入不同
-                open_alert("新密码不同，请重新输入");
-                return;
-            }
-            if (!isValidPassword(old_password)) {
-                open_alert('旧密码格式错误\n密码长度在8~16之间\n且只能包含字母数字');
-                return;
-            }
-            if (!isValidPassword(new_password)) {
-                open_alert('新密码格式错误\n密码长度在8~16之间\n且只能包含字母数字');
-                return;
-            }
-            // 这里修改密码的验证比较少，可以多加点。
-            let date = {
-                verify_type: "Change_Password",    // 验证类型，传到服务器后根据类型选择处理函数
-                old_password: encryptString_RSA(old_password),// 加密密码
-                new_password: encryptString_RSA(new_password),// 加密密码
-            };
-            get_Ajax_LogSubmit(date);
         }
 
 
@@ -327,8 +408,51 @@
             get_Ajax_LogSubmit(date)// 退出
         }
 
-        function search_data(data) {// 搜索数据回调
 
+        function scrollToMatch() {
+            const lastMatch = matches[currentMatchIndex];
+            currentMatchIndex += 1;// 入下一个索引
+            if (currentMatchIndex >= matches.length) {// 越界了
+                currentMatchIndex = 0;
+            }
+            const currentMatch = matches[currentMatchIndex];
+            if (lastMatch && currentMatch) {
+                lastMatch.element.classList.remove('High_light_li');// 清空上一次的高亮
+                if (lastMatch.element.parentNode !== currentMatch.element.parentNode) {
+                    lastMatch.element.parentNode.parentElement.open = false; // 取消展开所在部分
+                }
+            }
+            if (currentMatch) {// 这一次存在
+                currentMatch.element.classList.add('High_light_li');// 设置高亮
+                currentMatch.element.parentNode.parentElement.open = true; // 展开所在部分
+                currentMatch.element.scrollIntoView({behavior: 'smooth', block: 'start'});
+            }
+
+        }
+
+        function search_data(str_data) {// 搜索数据回调
+            if (str_data === "") {// 为空不匹配
+                return;
+            }
+            // 上次和这次不相同，更新匹配列表
+            if (str_data !== last_Match_Str) {
+                if (matches[currentMatchIndex]) {// 清空上一次的高亮
+                    matches[currentMatchIndex].element.classList.remove('High_light_li');
+                    matches[currentMatchIndex].element.parentNode.parentElement.open = false; // 取消展开所在部分
+                }
+                last_Match_Str = str_data;
+                // 获取 ID 为 display_list_div 的容器中所有的 <li> 元素
+                const listItems = document.querySelectorAll('#display_list_div li');
+                matches = []; // 重置匹配项
+                currentMatchIndex = -1; // 重置索引
+                listItems.forEach((item, index) => {// 匹配的放入索引列表
+                    if (item.textContent.includes(str_data)) {
+                        matches.push({element: item, index: index});
+                    }
+                });
+                matches.sort((a, b) => a.index - b.index); // 按出现顺序排序
+            }
+            scrollToMatch();// 滚动
         }
 
         function changeIframeSource(newUrl) {// 修改iframe显示的页面
@@ -356,7 +480,7 @@
 <div class="big_div">
     <div class="expandable_sidebar" id="expandable_sidebar_setup">
         <!--可折叠侧边栏（设置页）-->
-        <button class="button_set_up" onclick="change_password()">修改密码</button>
+        <button class="button_set_up" onclick="change_password()" style="margin-top: 30px;">修改密码</button>
         <button class="button_set_up" onclick="Log_Out()">退出登录</button>
     </div>
     <div class="expandable_sidebar" id="expandable_sidebar_add" style="display: flex;">
@@ -366,28 +490,29 @@
             <label for="search_input"></label><input type="search" id="search_input" name="query"
                                                      placeholder="搜索" class="search_input"/>
         </div>
-        <div id="display_list_div" class="sidebar_add_div" style="flex-grow: 1;">
-            <!--项目列表  占据所有剩余空间-->
+        <div id="display_list_div" class="sidebar_add_div"
+             style="flex-grow:1;overflow:scroll;max-height:480px;margin-top: auto;margin-bottom: auto;">
+            <!--项目列表  占据所有剩余空间 带滚动条-->
         </div>
         <div id="divider_div" class="sidebar_add_div" style="height:1.5px;background-color: rgb(55, 55, 55);">
             <!--分割线-->
         </div>
         <div id="other_list_div" class="sidebar_add_div" style="height:200px;">
-            <!--其他列表-->
+            <!--其他列表  now_Search_Data-->
             <button type="button" class="other_list_Button" id="file_button">
                 <span class="other_list_Button_left">📂</span>
                 <span class="other_list_Button_centre">文件</span>
-                <span class="other_list_Button_right">1</span>
+                <span class="other_list_Button_right" id="file_span">0</span>
             </button>
             <button type="button" class="other_list_Button" id="asterisk_button">
                 <span class="other_list_Button_left">⭐</span>
                 <span class="other_list_Button_centre">星标</span>
-                <span class="other_list_Button_right">1</span>
+                <span class="other_list_Button_right" id="asterisk_span">0</span>
             </button>
             <button type="button" class="other_list_Button" id="recycle_button">
                 <span class="other_list_Button_left">♻</span>
                 <span class="other_list_Button_centre">回收</span>
-                <span class="other_list_Button_right">1</span>
+                <span class="other_list_Button_right" id="recycle_span">0</span>
             </button>
         </div>
     </div>
@@ -434,8 +559,6 @@
 </div>
 </body>
 <script>
-    open_loading();
-    Initialization_interface()// 初始化
     // 给组件添加回调
     // 密码界面不增加回车回调，防止用户输入错误
     // 搜索框回车回调
@@ -445,5 +568,17 @@
             search_data(document.getElementById("search_input").value);
         }
     });
+    // 额外列表中的按钮回调
+    // 文件
+    document.getElementById('file_button').addEventListener('click', function () {
+    });
+    // 星标
+    document.getElementById('asterisk_button').addEventListener('click', function () {
+    });
+    // 回收
+    document.getElementById('recycle_button').addEventListener('click', function () {
+    });
+    open_loading();
+    Initialization_interface()// 初始化
 </script>
 </html>
