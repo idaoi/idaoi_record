@@ -175,11 +175,15 @@ ul {
 
 li {
     color: rgb(191, 191, 191);
+    height: 24px;/* 为了防止用户不输入随笔名字，导致看不见随笔 */
     font-size: 18px;
     display: block;
     text-align: left;
     padding-left: 45px;
     cursor: pointer; /* 鼠标放上变小手 */
+    overflow: hidden; /* 隐藏超出部分 */
+    white-space: nowrap; /* 禁用按钮文字换行 */
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
 }
 
 .High_light_li {
@@ -244,6 +248,7 @@ li {
 }
 
 .content_div {
+    width: 0;
     flex-grow: 1; /* 占据剩余部分 */
     border: none; /* 移除 iframe 的边框 */
 }
@@ -304,7 +309,7 @@ li {
     width: 350px; /* 宽度 */
     font-size: 20px; /*字体大小*/
     color: rgb(174, 174, 174);
-    text-align: center /* 文字居中 */
+    text-align: center; /* 文字居中 */
 }
 
 .password_input {

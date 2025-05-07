@@ -9,6 +9,7 @@ import tool.UserHandleClass;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import java.nio.charset.StandardCharsets;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-@WebServlet(urlPatterns = {"/heartbeat_detection", "/get_userdata"})
+@WebServlet(urlPatterns = {"/heartbeat_detection", "/get_userdata", "/post_userdata"})
 public class Home_Page_Get_Data extends HttpServlet {
 
     private static final long serialVersionUID = 1L;//序列化对象版本,确保发送方和接收方的序列化对象版本兼容
@@ -47,6 +48,12 @@ public class Home_Page_Get_Data extends HttpServlet {
                         r_Data = initialization.Initialization();
                         break;
                     case "Overview":// 总览界面，获取几个基础数据
+                        UserHandleClass Overview = new UserHandleClass(request, requestData);
+                        r_Data = Overview.get_Overview_data();
+                        break;
+                    case "Essays_Content":// 随笔内容
+                        UserHandleClass Essays_Content = new UserHandleClass(request, requestData);
+                        r_Data = Essays_Content.get_Essays_Content();
                         break;
                     case "File_Content":// 文件内容
                         break;
@@ -56,19 +63,72 @@ public class Home_Page_Get_Data extends HttpServlet {
 
                 Map<String, String> responseData;
                 // 创建响应JSON对象
-                if(Objects.equals(r_Data.get("state"), "OK")){
+                if (Objects.equals(r_Data.get("state"), "OK")) {
                     responseData = r_Data;
-                }
-                else {
+                } else {
                     responseData = new HashMap<>();
-                    responseData.put("state",r_Data.get("state"));
+                    responseData.put("state", r_Data.get("state"));
+                    // 防止泄露信息
                 }
                 //添加字段
                 responseData.put("message", "200");
+
                 // 将响应JSON对象写入响应
                 PrintWriter out = response.getWriter();
                 // 转为json字符串发送
-                out.write(objectMapper.writeValueAsString(responseData));
+                String jsonResponse = objectMapper.writeValueAsString(responseData);
+                // 设置 Content-Type 和 Content-Length
+                response.setContentType("application/json");
+                response.setContentLength(jsonResponse.getBytes(StandardCharsets.UTF_8).length);
+                out.write(jsonResponse);
+                out.flush();
+            } catch (Exception e) {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error");
+            }
+        } else if (path.endsWith("/post_userdata")) {// 提交内容
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                Map<String, String> requestData = objectMapper.readValue(request.getReader(), Map.class);
+                String verify_type = requestData.get("verify_type");//无返回null
+                Map<String, String> r_Data = new HashMap<>();
+                switch (verify_type) {
+                    case "post_Essays_Content":// 随笔内容
+                        UserHandleClass post_Essays_Content = new UserHandleClass(request, requestData);
+                        r_Data = post_Essays_Content.post_Essays_Content();
+                        break;
+                    case "delete_Essays_Content":// 随笔内容
+                        UserHandleClass delete_Essays_Content = new UserHandleClass(request, requestData);
+                        r_Data = delete_Essays_Content.delete_Essays_Content();
+                        break;
+                    case "File_Content":// 文件内容
+                        break;
+                    case "label_Content":// 标签内容
+                        UserHandleClass Change_Label = new UserHandleClass(request, requestData);
+                        r_Data = Change_Label.Change_Label();
+                        break;
+                    default:
+                        r_Data.put("state", "verify_type error");//类型错误
+                }
+                Map<String, String> responseData;
+                // 创建响应JSON对象
+                if (Objects.equals(r_Data.get("state"), "OK")) {
+                    responseData = r_Data;
+                } else {
+                    responseData = new HashMap<>();
+                    responseData.put("state", r_Data.get("state"));
+                    // 防止泄露信息
+                }
+                //添加字段
+                responseData.put("message", "200");
+
+                // 将响应JSON对象写入响应
+                PrintWriter out = response.getWriter();
+                // 转为json字符串发送
+                String jsonResponse = objectMapper.writeValueAsString(responseData);
+                // 设置 Content-Type 和 Content-Length
+                response.setContentType("application/json");
+                response.setContentLength(jsonResponse.getBytes(StandardCharsets.UTF_8).length);
+                out.write(jsonResponse);
                 out.flush();
             } catch (Exception e) {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error");

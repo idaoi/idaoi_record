@@ -3,6 +3,7 @@
 package tool;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import dao.entity.*;
 import dao.impl.*;
 import org.json.JSONArray;
@@ -89,7 +90,6 @@ public class UserHandleClass {
                         String encryption_uid = ProcessPassword.encrypt_RSA(user_uid, clientKey);
                         Modify_Login_Status(this.name, this.ip, encryption_uid, user_uid, clientKey_str);// 正在登陆
                         responseData.put("secret_key", encryption_uid);// 本次登录的密钥，也是此次登录的AES加密密钥
-//                        responseData.put("secret_key", user_uid);// 本次登录的密钥
                         responseData.put("username", String.format("%09d", this.name));// 用户名
                         responseData.put("state", "OK");// 没问题
                         break;
@@ -124,6 +124,9 @@ public class UserHandleClass {
             loginTable.set保持链接(1);
             loginTableImpl.update登录表(loginTable);
         }
+        // 向该用户的登录次数添加1
+        用户信息表_实现 userInformation_TableImpl = new 用户信息表_实现();
+        userInformation_TableImpl.Change次数(this.name, 1);
     }
 
     /**
@@ -138,7 +141,7 @@ public class UserHandleClass {
             String password = requestData.get("password");// 获取密码
             String server_Token;// 密钥在账号后面放着，为了防止重放攻击
             password = ProcessPassword.decrypt_RSA(password);// 解密密码
-            if (password.length() > 8+36) {
+            if (password.length() > 8 + 36) {
                 server_Token = password.substring(password.length() - 36);
                 password = password.substring(0, password.length() - 36);
             } else {
@@ -170,7 +173,7 @@ public class UserHandleClass {
                     userInformation_TableImpl.insert用户信息表(userInformation_Table);// 创建一条用户信息表数据
                     responseData.put("username", String.format("%09d", this.name));// 账号为9位字符串
                     标签表_实现 tag_TableImpl = new 标签表_实现();
-                    String[] tag =new String[]{"记录","完成","待办","紧急"};
+                    String[] tag = new String[]{"记录", "完成", "待办", "紧急"};
                     for (String string : tag) {
                         tag_TableImpl.insert标签表(new 标签表(-1, this.name, string));
                     }
@@ -318,8 +321,8 @@ public class UserHandleClass {
                     responseData.put("index", ProcessPassword.encrypt_AES_Str(jsonString, AES_key));
                     // 标签
                     标签表_实现 tag_TableImpl = new 标签表_实现();
-                    List<标签表> tag =  tag_TableImpl.get_all_标签表(this.name);
-                    responseData.put("label",objectMapper.writeValueAsString(tag));// 所有标签
+                    List<标签表> tag = tag_TableImpl.get_all_标签表(this.name);
+                    responseData.put("label", objectMapper.writeValueAsString(tag));// 所有标签
 
                     responseData.put("state", "OK");// 没问题
                     return responseData;
@@ -331,6 +334,270 @@ public class UserHandleClass {
         } catch (Exception e) {
             Map<String, String> responseData_out = new HashMap<>();
             responseData.put("state", "Initialization error");//错误
+            return responseData_out;
+        }
+    }
+
+    /**
+     * 总览界面获取数据，给出用户信息表后面的几个int数据即可
+     */
+    public Map<String, String> get_Overview_data() {
+        Map<String, String> responseData = new HashMap<>();
+        try {
+            if (this.get_detection_data()) {// 获取总览所需数据
+                String message_AES_key = this.requestData.get("secret_key");// 获取消息
+                String AES_key = ProcessPassword.decrypt_RSA(message_AES_key);// 解密消息
+                Instant clientTime = Instant.parse(AES_key.substring(AES_key.length() - 24));// 失效时间长24
+                AES_key = AES_key.substring(0, 36);// 密钥长36
+                String signature = this.requestData.get("signature");// 签名
+                if (this.login_Detection(AES_key, clientTime, message_AES_key, signature) == 0) {// 消息没问题
+                    用户信息表_实现 userInformation_TableImpl = new 用户信息表_实现();// 获取用户信息表数据
+                    用户信息表 userInformation = userInformation_TableImpl.get_用户信息表(this.name);
+                    responseData.put("字数", String.valueOf(userInformation.get字数()));
+                    responseData.put("篇数", String.valueOf(userInformation.get篇数()));
+                    responseData.put("次数", String.valueOf(userInformation.get次数()));
+                    responseData.put("时间", String.valueOf(userInformation.get时间()));
+                    responseData.put("state", "OK");//错误
+                    return responseData;
+                }
+            }
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "get_Overview_data error");//错误
+            return responseData_out;
+        } catch (Exception e) {
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "get_Overview_data error");//错误
+            return responseData_out;
+        }
+    }
+
+    /**
+     * 获取随笔内容
+     */
+    public Map<String, String> get_Essays_Content() {// 获取随笔内容
+        Map<String, String> responseData = new HashMap<>();
+        try {
+            if (this.get_detection_data()) {// 获取检测所需数据
+                String message_AES_key = this.requestData.get("secret_key");// 获取消息
+                String AES_key = ProcessPassword.decrypt_RSA(message_AES_key);// 解密消息
+                // 后半段数据,分割一下,分别是随笔号，加密内容，标签，失效时间
+                String[] rear_data = AES_key.substring(36).split("\\|");
+                AES_key = AES_key.substring(0, 36);// 密钥长36
+                int Essay_Num = Integer.parseInt(rear_data[0]);//随笔号
+                String Encrypt_content = rear_data[1];//加密内容
+                Integer label_Num;
+                if (rear_data[2].equals("null") || rear_data[2].isEmpty()) {
+                    label_Num = null;
+                } else {
+                    label_Num = Integer.parseInt(rear_data[2]);//标签，，注意是int
+                }
+                Instant clientTime = Instant.parse(rear_data[3]);// 失效时间
+                String signature = this.requestData.get("signature");// 签名
+                if (this.login_Detection(AES_key, clientTime, message_AES_key, signature) == 0) {// 消息没问题
+                    // 没问题先查看是创建随笔还是获取随笔
+                    if (label_Num == null || label_Num == 0) {
+                        label_Num = null;
+                    }
+                    随笔索引表_实现 essaysIndexTable_Impl = new 随笔索引表_实现();
+                    随笔内容表_实现 essaysContentTable_Impl = new 随笔内容表_实现();
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    if (Essay_Num <= 0) {// 数值为不可能出现的范围，表明是新随笔
+                        随笔索引表 new_essays_index = new 随笔索引表(0, "未命名随笔",
+                                label_Num, new Timestamp(System.currentTimeMillis()), new Timestamp(System.currentTimeMillis()),
+                                null, UUID.randomUUID().toString(), null, this.name);
+                        int essaysIndexNum = essaysIndexTable_Impl.insert随笔索引表(new_essays_index);//创建一条随笔索引
+                        随笔内容表 new_content_index = new 随笔内容表(essaysIndexNum, "", null, this.name);
+                        essaysContentTable_Impl.insert随笔内容表(new_content_index);//创建一条随笔内容
+                        responseData.put("state", "OK");// 给了内容
+                        responseData.put("data", "new_essays");// 创建了新随笔
+                        new_essays_index.set随笔号(essaysIndexNum);
+                        String new_index_data = objectMapper.writeValueAsString(new_essays_index);
+                        responseData.put("new_index", ProcessPassword.encrypt_AES_Str(new_index_data, AES_key));// 给新随笔默认数据
+                        return responseData;
+                    } else {// 否则看看密码对不对
+                        随笔索引表 old_essays_index = essaysIndexTable_Impl.get_随笔索引表(Essay_Num);
+                        if (old_essays_index.get账号() == this.name) {
+                            if (old_essays_index.get加密() == null || Objects.equals(old_essays_index.get加密内容(), Encrypt_content)) {
+                                //密码没问题，返回内容
+                                随笔内容表 old_content_index = essaysContentTable_Impl.get_随笔内容表(Essay_Num);
+                                responseData.put("state", "OK");// 给了内容
+                                responseData.put("data", "old_essays");// 旧随笔内容
+                                String essays_index_data = objectMapper.writeValueAsString(old_essays_index);
+                                responseData.put("essays_index", ProcessPassword.encrypt_AES_Str(essays_index_data, AES_key));// 给随笔默认数据
+                                responseData.put("essays_data", old_content_index.get随笔内容());// 内容本身的密钥在用户手中。
+                                return responseData;
+                            } else {
+                                responseData.put("state", "Password_error");// 密码错误
+                                return responseData;
+                            }
+                        }
+                    }
+                }
+            }
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "other_error");//错误
+            return responseData_out;
+        } catch (Exception e) {
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "other_error");//错误
+            return responseData_out;
+        }
+    }
+
+    /**
+     * 提交随笔内容
+     */
+    public Map<String, String> post_Essays_Content() {
+        Map<String, String> responseData = new HashMap<>();
+        try {
+            if (this.get_detection_data()) {// 获取检测所需数据
+                String message_AES_key = this.requestData.get("secret_key");// 获取消息
+                String AES_key = ProcessPassword.decrypt_RSA(message_AES_key);// 解密消息
+                // 后半段数据,分割一下,分别是随笔号，加密，加密内容，标签，失效时间
+                String[] rear_data = AES_key.substring(36).split("\\|");
+                AES_key = AES_key.substring(0, 36);// 密钥长36
+                int Essay_Num = Integer.parseInt(rear_data[0]);//随笔号
+                String Encrypt_data = rear_data[1];//加密
+                String Encrypt_content = rear_data[2];//加密内容
+                Integer label_Num = null;
+                if (rear_data[3].equals("null") || rear_data[3].isEmpty()) {
+                    label_Num = null;
+                } else {
+                    label_Num = Integer.parseInt(rear_data[3]);//标签，，注意是int
+                }
+                Instant clientTime = Instant.parse(rear_data[4]);// 失效时间
+                String Encrypt_name = this.requestData.get("essays_name");//随笔名
+                String signature = this.requestData.get("signature");// 签名
+                if (this.login_Detection(AES_key, clientTime, message_AES_key, signature) == 0) {// 消息没问题
+                    // 看看密码对不对
+                    随笔索引表_实现 essaysIndexTable_Impl = new 随笔索引表_实现();
+                    随笔索引表 old_essays_index = essaysIndexTable_Impl.get_随笔索引表(Essay_Num);
+                    if (old_essays_index.get账号() == this.name) {
+                        if (Objects.equals(old_essays_index.get加密内容(), Encrypt_content)) {// 加密内容相同，没问题。
+                            // 接下来就是保存发来的索引和数据了
+                            // 先保存索引
+                            if (label_Num == null || label_Num == 0) {
+                                label_Num = null;
+                            }
+                            old_essays_index.set标签(label_Num);
+                            old_essays_index.set随笔名(Encrypt_name);
+                            if (!(Encrypt_data.equals("null") || Encrypt_data.isEmpty())) {// 加密不为空
+                                old_essays_index.set加密(Encrypt_data);
+                            } else {
+                                old_essays_index.set加密(null);
+                            }
+                            // 编辑时间
+                            old_essays_index.set最后编辑时间(new Timestamp(System.currentTimeMillis()));
+                            essaysIndexTable_Impl.update随笔索引表(old_essays_index);// 修改索引
+                            // 保存数据
+                            随笔内容表_实现 essaysContentTable_Impl = new 随笔内容表_实现();
+                            essaysContentTable_Impl.update随笔内容表(Essay_Num, this.requestData.get("essays_data"));
+                            用户信息表_实现 userInformation_TableImpl = new 用户信息表_实现();// 获取用户信息表数据，修改字数
+                            userInformation_TableImpl.Change字数(this.name, Integer.parseInt(this.requestData.get("essays_change_len")));
+                            responseData.put("state", "OK");// 没问题（没做SQL影响的行数判断，如果输入数MB内容超限不一定可行，）
+                            return responseData;
+
+                        } else {
+                            responseData.put("state", "Password_error");// 密码错误
+                            return responseData;
+                        }
+                    }
+                }
+            }
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "other_error");//错误
+            return responseData_out;
+        } catch (Exception e) {
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "other_error");//错误
+            return responseData_out;
+        }
+    }
+
+    /**
+     * 删除随笔
+     */
+    public Map<String, String> delete_Essays_Content() {
+        Map<String, String> responseData = new HashMap<>();
+        try {
+            if (this.get_detection_data()) {// 获取检测所需数据
+                String message_AES_key = this.requestData.get("secret_key");// 获取消息
+                String AES_key = ProcessPassword.decrypt_RSA(message_AES_key);// 解密消息
+                // 后半段数据,分割一下,分别是随笔号，加密内容，失效时间
+                String[] rear_data = AES_key.substring(36).split("\\|");
+                AES_key = AES_key.substring(0, 36);// 密钥长36
+                int Essay_Num = Integer.parseInt(rear_data[0]);//随笔号
+                String Encrypt_content = rear_data[1];//加密内容
+                Instant clientTime = Instant.parse(rear_data[2]);// 失效时间
+                String signature = this.requestData.get("signature");// 签名
+                if (this.login_Detection(AES_key, clientTime, message_AES_key, signature) == 0) {// 消息没问题
+                    // 看看密码对不对
+                    随笔索引表_实现 essaysIndexTable_Impl = new 随笔索引表_实现();
+                    随笔索引表 old_essays_index = essaysIndexTable_Impl.get_随笔索引表(Essay_Num);
+                    if (old_essays_index.get账号() == this.name) {
+                        if (Objects.equals(old_essays_index.get加密内容(), Encrypt_content)) {// 加密内容相同，没问题。
+                            essaysIndexTable_Impl.delete随笔索引表(Essay_Num, this.name);// 删除随笔
+                            用户信息表_实现 userInformation_TableImpl = new 用户信息表_实现();// 获取用户信息表数据，修改字数
+                            userInformation_TableImpl.Change字数(this.name, Integer.parseInt(this.requestData.get("essays_change_len")));
+                            responseData.put("state", "OK");
+                            return responseData;
+                        }
+                    }
+                }
+            }
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "other_error");//错误
+            return responseData_out;
+        } catch (Exception e) {
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "other_error");//错误
+            return responseData_out;
+        }
+    }
+
+    /**
+     * 修改标签
+     */
+    public Map<String, String> Change_Label() {
+        Map<String, String> responseData = new HashMap<>();
+        try {
+            if (this.get_detection_data()) {// 获取总览所需数据
+                String message_AES_key = this.requestData.get("secret_key");// 获取消息
+                String AES_key = ProcessPassword.decrypt_RSA(message_AES_key);// 解密消息
+                Instant clientTime = Instant.parse(AES_key.substring(AES_key.length() - 24));// 失效时间长24
+                AES_key = AES_key.substring(0, 36);// 密钥长36
+                String signature = this.requestData.get("signature");// 签名
+                if (this.login_Detection(AES_key, clientTime, message_AES_key, signature) == 0) {// 消息没问题
+                    String Label_data = ProcessPassword.decrypt_AES_Str(this.requestData.get("Label_data"), AES_key);
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    List<Map<String, Object>> labelList = objectMapper.readValue(Label_data, new TypeReference<List<Map<String, Object>>>() {
+                    });
+                    标签表_实现 tag_TableImpl = new 标签表_实现();
+                    for (Map<String, Object> l_data : labelList) {
+                        if (l_data.containsKey("标签号")) {// 原先就有的，修改原来的数据
+                            tag_TableImpl.update标签表((Integer) l_data.get("标签号"),
+                                    (String) l_data.get("标签名"), this.name);
+                        } else if (l_data.containsKey("临时号")) {// 没有的，创个新的。
+                            tag_TableImpl.insert标签表(new 标签表(-1, this.name, (String) l_data.get("标签名")));
+                        }
+                    }
+                    // 该删除的删除
+                    String delete_data = ProcessPassword.decrypt_AES_Str(this.requestData.get("delete_Label"), AES_key);
+                    List<Integer> delete_Label = objectMapper.readValue(delete_data, new TypeReference<List<Integer>>() {
+                    });
+                    for (Integer id_label : delete_Label) {
+                        tag_TableImpl.delete标签表(id_label, this.name);
+                    }
+                    responseData.put("state", "OK");
+                    return responseData;
+                }
+            }
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "other_error");//错误
+            return responseData_out;
+        } catch (Exception e) {
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "other_error");//错误
             return responseData_out;
         }
     }

@@ -1,5 +1,6 @@
 
 html, body {
+    user-select: none; /* 不显示输入光标 */
     height: 100%;
     margin: 0;
 }
@@ -15,7 +16,7 @@ html, body {
 }
 
 .dark_color_div {
-    position: relative;/* 位置 相对 */
+    position: relative; /* 位置 相对 */
     background-color: rgb(22, 22, 22);
     border-radius: 30px; /* 圆角边框 */
     margin: 5%;
@@ -40,8 +41,8 @@ html, body {
     place-items: center; /* 水平和垂直居中 */
     font-size: 20px;
     color: rgb(191, 191, 191);
-    margin: 1%;
-    overflow:hidden;/* 超出部分裁剪 */
+    margin: auto;
+    overflow: hidden; /* 超出部分裁剪 */
 }
 
 .div_data_span {
@@ -103,8 +104,11 @@ html, body {
 
 .time_data_span {
     margin-left: 10%;
-    white-space: nowrap; /* 禁用文字换行 */
     width: 90%;
+    cursor: pointer; /* 鼠标放上变小手 */
+    overflow: hidden; /* 隐藏超出部分 */
+    white-space: nowrap; /* 禁用按钮文字换行 */
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
 }
 
 .star_shape_span {
@@ -117,7 +121,10 @@ html, body {
 
 .star_data_span {
     width: 80%;
-    white-space: nowrap; /* 禁用文字换行 */
+    cursor: pointer; /* 鼠标放上变小手 */
+    overflow: hidden; /* 隐藏超出部分 */
+    white-space: nowrap; /* 禁用按钮文字换行 */
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
 }
 
 .italic {

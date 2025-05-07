@@ -3,6 +3,7 @@
   <component name="WebContextManager">
     <option name="state">
       <map>
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/iframe_html/随笔.jsp" value="file://$PROJECT_DIR$/src/main/webapp/iframe_html" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/主页.jsp" value="file://$PROJECT_DIR$/src/main/webapp" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/登录.jsp" value="file://$PROJECT_DIR$/src/main/webapp" />
       </map>

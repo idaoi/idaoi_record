@@ -12,7 +12,6 @@
     <script src="Encryption_Decryption.js"></script>
     <script src="js/crypto-js.min.js"></script><!--这个用于哈希-->
     <script type="text/javascript">
-
     </script>
     <style>
         html, body {
@@ -32,10 +31,10 @@
         }
     </style>
     <script type="text/javascript">
-        let server_publicKeyPem;// 服务器的公钥
-        let client_publicKeyPem;// 客户端的公钥
-        let client_privateKeyPem;// 客户端的私钥 此为new JSEncrypt();
-        let AES_Key;
+        var server_publicKeyPem;// 服务器的公钥
+        var client_publicKeyPem;// 客户端的公钥
+        var client_privateKeyPem;// 客户端的私钥 此为new JSEncrypt();
+        var AES_Key;
 
         function changeIframeSource(newUrl) {// 修改iframe显示的页面
             let iframeElement = document.getElementById('iframe_html');
@@ -55,7 +54,6 @@
 </head>
 <body>
 <iframe id="iframe_html">
-
 </iframe>
 <script>
     get_login()

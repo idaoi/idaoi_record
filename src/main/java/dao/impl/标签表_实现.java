@@ -69,12 +69,13 @@ public class 标签表_实现 implements 标签表_接口 {
     }
 
     @Override
-    public void update标签表(int id, String str) {
-        String sql = "UPDATE 标签表 SET 标签名 = ? WHERE 标签号 = ?";
+    public void update标签表(int id, String str, int name) {
+        String sql = "UPDATE 标签表 SET 标签名 = ? WHERE 标签号 = ? and 账号=?";
         try (Connection conn = MySQL_Account.getDataSource().getConnection();//获取链接
              PreparedStatement pstmt = conn.prepareStatement(sql)) {//创建PreparedStatement对象
             pstmt.setString(1, str);
             pstmt.setInt(2, id);
+            pstmt.setInt(3, name);
             pstmt.executeUpdate();// 执行提交
         } catch (SQLException e) {
             e.printStackTrace();
@@ -87,6 +88,19 @@ public class 标签表_实现 implements 标签表_接口 {
         try (Connection conn = MySQL_Account.getDataSource().getConnection();//获取链接
              PreparedStatement pstmt = conn.prepareStatement(sql)) {//创建PreparedStatement对象
             pstmt.setInt(1, id);
+            pstmt.executeUpdate();// 执行提交
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void delete标签表(int id, int name) {
+        String sql = "DELETE FROM 标签表 WHERE 标签号 = ? and 账号 = ?";
+        try (Connection conn = MySQL_Account.getDataSource().getConnection();//获取链接
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {//创建PreparedStatement对象
+            pstmt.setInt(1, id);
+            pstmt.setInt(2, name);
             pstmt.executeUpdate();// 执行提交
         } catch (SQLException e) {
             e.printStackTrace();

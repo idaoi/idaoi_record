@@ -72,18 +72,32 @@ public class 登录表_实现 implements 登录表_接口 {
 
     @Override
     public void update登录表(int id, Timestamp 退出时间) {
-        String sql = "UPDATE 登录表 SET 退出时间 = ? WHERE 账号 = ?";
-        try (Connection conn = MySQL_Account.getDataSource().getConnection();//获取链接
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {//创建PreparedStatement对象
-            if (退出时间 == null) {
+        String sql1 = "UPDATE 登录表 SET 退出时间 = ? WHERE 账号 = ?";
+        // 增加了记录登陆时长的部分
+        String sql2 = "UPDATE 登录表 login " +// 登录表 别名login
+                "JOIN 用户信息表 user_data ON login.账号 = user_data.账号 " +// 链接两表，条件为账号相等
+                "SET login.退出时间 = ? , " + // 设置退出时间
+                "user_data.时间 = user_data.时间 + TIMESTAMPDIFF(MINUTE,login.登录时间,?)" +// 退出时间增加登录到当前时间差
+                "WHERE login.账号 = ?"; // 只更新退出时间为空以及未保持连接的账号
+        if (退出时间 == null) {
+            try (Connection conn = MySQL_Account.getDataSource().getConnection();//获取链接
+                 PreparedStatement pstmt = conn.prepareStatement(sql1)) {//创建PreparedStatement对象
                 pstmt.setNull(1, Types.TIMESTAMP);
-            } else {
-                pstmt.setTimestamp(1, 退出时间);
+                pstmt.setInt(2, id);
+                pstmt.executeUpdate();// 执行提交
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-            pstmt.setInt(2, id);
-            pstmt.executeUpdate();// 执行提交
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } else {
+            try (Connection conn = MySQL_Account.getDataSource().getConnection();//获取链接
+                 PreparedStatement pstmt = conn.prepareStatement(sql2)) {//创建PreparedStatement对象
+                pstmt.setTimestamp(1, 退出时间);
+                pstmt.setTimestamp(2, 退出时间);
+                pstmt.setInt(3, id);
+                pstmt.executeUpdate();// 执行提交
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

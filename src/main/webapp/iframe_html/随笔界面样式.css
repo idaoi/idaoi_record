@@ -14,7 +14,7 @@ html, body {
     align-items: center; /*垂直*/
 }
 
-.dark_color_div{
+.dark_color_div {
     height: 90%;
     width: 90%;
     position: relative;
@@ -22,73 +22,357 @@ html, body {
     border-radius: 30px; /* 圆角边框 */
     display: flex;
     flex-direction: column; /* 纵向排列 */
-    overflow:hidden;/* 超出部分裁剪 */
+    overflow: hidden; /* 超出部分裁剪 */
 }
-.up_div{
+
+.up_div {
     height: 12.5%;
     width: 100%;
     display: flex;
     align-items: center; /*垂直*/
-    justify-content: space-around; /* 均匀分布 */
+    color: rgb(191, 191, 191);
+    font-size: 30px;
+    padding-left: 35px;
+    overflow: hidden; /* 隐藏超出部分 */
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
+    white-space: nowrap; /* 禁用文字换行 */
 }
-.line_div{
+
+.line_div {
     height: 3px; /* 线的厚度 */
     width: 100%; /* 线的长度等于父容器的宽度 */
     background-color: rgb(55, 55, 55);
 }
-.down_div{
+
+.password_div { /* 密码输入界面 */
     flex-grow: 1; /* 占据剩余部分 */
+    height: 0;
+    width: 100%;
+    display: flex;
+    transition: 0.5s;
+    overflow: hidden; /* 超出部分裁剪 */
+}
+
+.password_input_div { /* 居中的密码输入div */
+    position: relative; /* 相对定位 */
+    top: 80%; /* 距离顶部80% */
+    left: 50%; /* 距离左侧50% */
+    transform: translate(-50%, -50%); /* 通过transform调整位置，实现真正的居中 */
+    width: 350px; /* 宽度 */
+    font-size: 20px; /*字体大小*/
+    color: rgb(174, 174, 174);
+    display: flex; /* 使用 Flexbox 布局 */
+    flex-direction: column; /* 子元素垂直排列 */
+    align-items: center; /* 子元素水平居中 */
+    text-align: center; /* 文字居中 */
+    cursor: default; /* 鼠标放上默认显示 */
+}
+
+.password_pattern { /* 密码图像 */
+    font-size: 100px; /*字体大小*/
+
+}
+
+.password_text_input {
+    display: block; /* 使输入框垂直排列 */
+    width: 200px; /* 宽度 */
+    font-size: 20px; /*字体大小*/
+    border: none; /* 移除所有边框 */
+    border-bottom: 2px solid rgb(120, 0, 0); /* 添加下边框 */
+    color: rgb(220, 220, 220);
+    outline: none; /* 移除聚焦时的默认蓝色边框 */
+    background-color: transparent;
+    padding: 8px; /* 输入框的内边距 */
+    text-align: center; /*文字居中*/
+}
+
+.down_div {
+    flex-grow: 0;
+    height: 0;
     width: 100%;
     display: flex;
     align-items: center; /*垂直*/
-    overflow:hidden;/* 超出部分裁剪 */
+    overflow: hidden; /* 超出部分裁剪 */
+    transition: 0.5s;
 }
-.catalogue_div{/* 目录 */
+
+.catalogue_div { /* 目录 */
     height: 95%;
-    width: 30%;
-    margin: 1% 0 1% 1%;
+    width: 255px;
     background-color: rgb(38, 38, 38);
     border-radius: 30px 30px 30px 0; /* 圆角边框 左上角开始顺时针 */
-    overflow:hidden;/* 超出部分裁剪 */
+    overflow: hidden; /* 超出部分裁剪 */
+    transition: 0.5s;
+    align-items: center;
+    display: flex;
 }
-.right_div{
+
+
+.catalogue_data_div {
+    height: 93%;
+    width: 255px;
+    padding-left: 20px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    margin: auto;
+}
+
+/* 定义滚动条， WebKit 内核 （如 Chrome 和 Safari），我没下火狐*/
+.catalogue_data_div::-webkit-scrollbar { /* 整体 */
+    width: 10px;
+    height: 95%;
+}
+
+.catalogue_data_div::-webkit-scrollbar-button { /* 方向按钮 */
+    width: 0;
+    height: 0;
+}
+
+.catalogue_data_div::-webkit-scrollbar-track { /* 轨道 */
+    background: rgb(55, 55, 55); /* 轨道的背景色 */
+    border-radius: 6px; /* 轨道的圆角 */
+}
+
+.catalogue_data_div::-webkit-scrollbar-thumb { /* 滑块 */
+    background: rgb(24, 24, 24); /* 滑块的背景色 */
+    border-radius: 6px; /* 滑块的圆角 */
+}
+
+#catalogue_data {
+    list-style-type: none;
+}
+
+#catalogue_data li {
+    color: rgb(191, 191, 191);
+    margin: 10px 0;
+    cursor: pointer;
+    white-space: nowrap; /* 禁用文字换行 */
+    overflow: hidden; /* 隐藏超出部分 */
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
+}
+
+#catalogue_data li:hover {
+    text-decoration: underline;
+}
+
+#catalogue_data li[type="header1"] {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#catalogue_data li[type="header2"] {
+    font-size: 16px;
+    padding-left: 15px;
+    font-weight: bold;
+}
+
+#catalogue_data li[type="header3"] {
+    font-size: 14px;
+    padding-left: 30px;
+}
+
+#catalogue_data li[type="header4"] {
+    font-size: 12px;
+    padding-left: 45px;
+}
+
+#catalogue_data li[type="header5"] {
+    font-size: 12px;
+    padding-left: 60px;
+}
+
+.right_div {
     position: relative;
+    width: 0;
     height: 95%;
     margin: 0 1% 1% 0.5%;
     display: flex;
     flex-direction: column; /* 纵向排列 */
     flex-grow: 1; /* 占据剩余部分 */
-    overflow:hidden;/* 超出部分裁剪 */
+    overflow: hidden; /* 超出部分裁剪 */
 }
 
-.set_up_div{
+.set_up_div {
+    display: flex;
     height: 6%;
     width: 100%;
+    justify-content: space-around; /* 均匀分布 */
+    color: rgb(64, 64, 64);
 }
 
-.button_span{
+.button_span {
     font-style: italic; /* 斜体 */
     text-decoration: underline; /* 下划线 */
     color: rgb(191, 191, 191);
     font-size: 20px;
+    cursor: pointer; /* 鼠标放上变小手 */
+    background-color: transparent;
+    border: none; /* 无边框 */
 }
 
-.content_div{
+.button_span:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgb(38, 38, 38);
+}
+
+.button_span:disabled {
+    color: rgb(100, 100, 100);
+    cursor: default; /* 鼠标放上默认显示 */
+}
+
+.time_span {
+    color: rgb(191, 191, 191);
+    font-size: 20px;
+    cursor: default; /* 鼠标放上默认显示 */
+}
+
+.dark_select { /* 选择框 */
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 150px;
+    border-radius: 10px; /* 圆角边框 */
+    background-color: transparent;
+    border: none; /* 无边框 */
+    color: rgb(220, 220, 220);
+    white-space: nowrap; /* 禁用文字换行 */
+    overflow: hidden; /* 超出部分裁剪 */
+}
+
+option {
+    background-color: rgb(38, 38, 38);
+    border: none; /* 无边框 */
+}
+
+fieldset {
+    overflow: hidden; /* 超出部分裁剪 */
+    justify-content: space-around; /* 均匀分布 */
+    display: flex;
+    flex-direction: column;
+    font-size: 20px;
+    color: rgb(191, 191, 191);
+}
+
+legend {
+    color: rgb(191, 191, 191);
+}
+
+fieldset label {
+    margin: auto 0;
+}
+
+fieldset button {
+    width: 150px;
+    font-size: 20px;
+    background-color: rgb(45, 45, 45);
+    color: rgb(191, 191, 191);
+    border-radius: 10px; /* 圆角边框 */
+    border: none; /* 无边框 */
+    cursor: pointer; /* 鼠标放上变小手 */
+}
+
+fieldset div {
+    flex-direction: row;
+    display: flex;
+    justify-content: space-around;
+}
+
+.content_div {
     width: 100%;
+    height: 0;
     flex-direction: column; /* 纵向排列 */
     display: flex;
     clear: both;
     flex-grow: 1; /* 占据剩余部分 */
-    overflow:hidden;/* 超出部分裁剪 */
+    overflow: hidden; /* 超出部分裁剪 */
 }
 
-.floating_button{
+.editor-text-area {
+    overflow: scroll;
+    background-color: rgb(26, 26, 26);
+}
+
+/* 定义滚动条， WebKit 内核 （如 Chrome 和 Safari），我没下火狐*/
+.editor-text-area::-webkit-scrollbar { /* 整体 */
+    width: 10px;
+    height: 95%;
+}
+
+.editor-text-area::-webkit-scrollbar-button { /* 方向按钮 */
+    width: 0;
+    height: 0;
+}
+
+.editor-text-area::-webkit-scrollbar-track { /* 轨道 */
+    background: rgb(18, 18, 18); /* 轨道的背景色 */
+    border-radius: 6px; /* 轨道的圆角 */
+}
+
+.editor-text-area::-webkit-scrollbar-thumb { /* 滑块 */
+    background: rgb(55, 55, 55); /* 滑块的背景色 */
+    border-radius: 6px; /* 滑块的圆角 */
+}
+
+.floating_button {
     /* 悬浮按钮 */
-    position: absolute; /* 设置子元素为绝对定位 */
     width: 5px;
     height: 10%;
-    margin: 0;
-    bottom: 2%;
+    border-color: rgb(22, 22, 22);
+    border-style: solid;
+    margin-bottom: 13px;
+    align-self: flex-end;
     background-color: rgb(38, 38, 38);
     border-radius: 10px 0 0 10px; /* 圆角边框 左上角开始顺时针 */
+}
+
+.floating_button:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgb(55, 55, 55);
+}
+
+
+.spinner {
+    border: 10px solid rgb(8, 8, 8); /* 黑色的外圈 */
+    border-radius: 50%; /* 圆形元素 */
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(90deg, #000 50%, #fff 50%);
+    margin: auto;
+    animation: spin 2s linear infinite; /* 应用spin，持续2s 无限循环 */
+}
+
+.spinner::before, .spinner::after { /* 伪元素造两个小圆 */
+    content: '●';
+    position: absolute; /* 绝对定位 */
+    border-radius: 50%; /* 圆形元素 */
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    line-height: 50px; /* 行高等于容器高度 */
+    display: inline-block;
+    transform: translateX(-50%);
+    border: none; /* 无边框 */
+    box-shadow: none; /* 无阴影 */
+    text-align: center;
+    font-size: 30px;
+}
+
+.spinner::before {
+    top: 0;
+    background-color: #000;
+    color: #fff;
+}
+
+.spinner::after {
+    bottom: 0;
+    background-color: #fff;
+    color: #000;
+}
+
+@keyframes spin { /* 两个关键帧 */
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }

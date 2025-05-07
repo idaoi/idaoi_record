@@ -23,12 +23,14 @@
 
     <link rel="stylesheet" type="text/css" href="主页界面样式.css">
     <script type="text/javascript">
-        let default_AES_key;// 默认AES密钥
-        let Essays_Index;// 所有随笔索引
-        let All_Label;// 所有标签
-        let Comprehensive_List;//以标签为键，索引列表为值的字典
-        let now_Essays_Index;// 打开随笔页面时，显示的随笔索引
-        let now_Search_Data;// 打开搜索页面时，显示的搜索数据
+        var default_AES_key;// 默认AES密钥
+        var Essays_Index;// 所有随笔索引
+        var normal_Essays_Index;//没有回收的正常随笔列表
+        var recycle_Essays_Index;//回收随笔列表
+        var All_Label;// 所有标签
+        var Comprehensive_List;//以标签为键，索引列表为值的字典
+        var now_Essays_Index;// 打开随笔页面时，显示的随笔索引
+        var now_Search_Data;// 打开搜索页面时，显示的搜索数据
         function Initialization_interface() {
             // 初始化界面
             // 该页初始化时，再向服务器请求用户基础数据，服务器会发送该账号的部分用户信息表内容，
@@ -47,8 +49,6 @@
             }
             // 获取用户基础数据（默认AES密钥，各种基础值）
             get_Ajax_get_userdata(date);
-            get_Ajax_heartbeat();// 执行心跳检测
-
             // 打开侧边栏
             sidebar_add_ButtonClick();
             sidebar_homepage_ButtonClick();// 进入总览界面
@@ -62,26 +62,30 @@
         function set_Comprehensive_List() {// 设置Comprehensive_List
             let asterisk_num = 0;// 星标数
             let recycle_num = 0;// 回收数
-            Comprehensive_List = {"未分组": []};
+            Comprehensive_List = {0: []};
+            normal_Essays_Index = [];
+            recycle_Essays_Index = [];
             for (const label in All_Label) {// 生成每个大标签组
-                Comprehensive_List[All_Label[label]["标签名"]] = [];
+                Comprehensive_List[All_Label[label]["标签号"]] = [];
             }
             for (const index in Essays_Index) {// 所有索引按标签分类
                 let not_match = true;
                 if (startsWithStr(Essays_Index[index]["随笔名"], "♻")) {// 回收不放
+                    recycle_Essays_Index.push(Essays_Index[index]);// 组建正常随笔列表，用于搜索。
                     recycle_num += 1;
                 } else {
+                    normal_Essays_Index.push(Essays_Index[index]);// 组建正常随笔列表，用于搜索。
                     if (startsWithStr(Essays_Index[index]["随笔名"], "⭐")) {
                         asterisk_num += 1;
                     }
                     for (const label in All_Label) {
-                        if (Essays_Index[index]["标签"] === All_Label[label]["标签名"]) {
-                            Comprehensive_List[All_Label[label]["标签名"]].push(Essays_Index[index])
+                        if (Essays_Index[index]["标签"] === All_Label[label]["标签号"]) {// 按随笔的随笔号分配随笔
+                            Comprehensive_List[All_Label[label]["标签号"]].push(Essays_Index[index])
                             not_match = false;
                         }
                     }
                     if (not_match) {
-                        Comprehensive_List["未分组"].push(Essays_Index[index])
+                        Comprehensive_List[0].push(Essays_Index[index])
                     }
                 }
             }
@@ -320,11 +324,19 @@
                 const span_txt = document.createElement("span");
                 const span_add = document.createElement("span");
                 span_txt.className = "summary_span";
-                span_txt.textContent = label; // 设置 summary 的文本为标签名
+                if (label === "0") {
+                    span_txt.textContent = "未分组"; // 设置 summary 的文本为标签名
+                } else {
+                    for (const l in All_Label) {// 遍历每个标签
+                        if (All_Label[l]["标签号"].toString() === label) {
+                            span_txt.textContent = All_Label[l]["标签名"]; // 设置 summary 的文本为标签名
+                        }
+                    }
+                }
                 span_add.className = "summary_before_span";
                 span_add.textContent = "+"; // 设置 summary 的文本为标签名
                 span_add.addEventListener('click', function () {// 点击跳转到随笔
-                    now_Essays_Index = {"随笔号": -1, "标签": label};// 创建一个新的随笔
+                    now_Essays_Index = {"随笔号": -1, "随笔名": "未命名随笔", "标签": label};// 创建一个新的随笔
                     changeIframeSource("iframe_html/随笔.jsp")// 跳转到随笔
                 })
                 summary.appendChild(span_txt);
@@ -398,6 +410,10 @@
         function close_loading() {// 关闭加载界面
             close_popup("popup_big_alert");
             close_popup("loading_div");
+        }
+
+        function change_label() {// 修改标签的回调
+            changeIframeSource("iframe_html/修改标签.jsp")
         }
 
 
@@ -481,17 +497,18 @@
     <div class="expandable_sidebar" id="expandable_sidebar_setup">
         <!--可折叠侧边栏（设置页）-->
         <button class="button_set_up" onclick="change_password()" style="margin-top: 30px;">修改密码</button>
+        <button class="button_set_up" onclick="change_label()">修改标签</button>
         <button class="button_set_up" onclick="Log_Out()">退出登录</button>
     </div>
     <div class="expandable_sidebar" id="expandable_sidebar_add" style="display: flex;">
         <!--可折叠侧边栏（添加页）-->
-        <div id="search_div" class="sidebar_add_div" style="height:35px;">
+        <div id="search_div" class="sidebar_add_div" style="height:50px;">
             <!--搜索框-->
             <label for="search_input"></label><input type="search" id="search_input" name="query"
                                                      placeholder="搜索" class="search_input"/>
         </div>
         <div id="display_list_div" class="sidebar_add_div"
-             style="flex-grow:1;overflow:scroll;max-height:480px;margin-top: auto;margin-bottom: auto;">
+             style="flex-grow:1;height:0;overflow:scroll;max-height:480px;margin-top: auto;margin-bottom: auto;">
             <!--项目列表  占据所有剩余空间 带滚动条-->
         </div>
         <div id="divider_div" class="sidebar_add_div" style="height:1.5px;background-color: rgb(55, 55, 55);">
@@ -574,11 +591,16 @@
     });
     // 星标
     document.getElementById('asterisk_button').addEventListener('click', function () {
+        now_Search_Data = {"时间": "编辑时间", "星标": true, "标签": "all"};
+        changeIframeSource("iframe_html/搜索.jsp")// 跳转到搜索
     });
     // 回收
     document.getElementById('recycle_button').addEventListener('click', function () {
+        now_Search_Data = {"时间": "编辑时间", "星标": false, "标签": "-1"};
+        changeIframeSource("iframe_html/搜索.jsp")// 跳转到搜索
     });
     open_loading();
     Initialization_interface()// 初始化
+    get_Ajax_heartbeat();// 执行心跳检测
 </script>
 </html>

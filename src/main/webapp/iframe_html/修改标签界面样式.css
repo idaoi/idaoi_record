@@ -1,0 +1,148 @@
+html, body {
+    user-select: none; /* 不显示输入光标 */
+    height: 100%;
+    margin: 0;
+}
+
+.big_div {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background-color: rgb(52, 52, 52);
+    display: flex;
+    /* 子元素显示在中心 */
+    justify-content: center; /*水平*/
+    align-items: center; /*垂直*/
+}
+
+.dark_color_div {
+    height: 90%;
+    width: 90%;
+    position: relative;
+    background-color: rgb(22, 22, 22);
+    border-radius: 30px; /* 圆角边框 */
+    display: flex;
+    flex-direction: column; /* 纵向排列 */
+    overflow: hidden; /* 超出部分裁剪 */
+}
+
+.up_div {
+    height: 12.5%;
+    width: 100%;
+    display: flex;
+    align-items: center; /*垂直*/
+    color: rgb(191, 191, 191);
+    font-size: 30px;
+    padding-left: 35px;
+    overflow: hidden; /* 隐藏超出部分 */
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
+    white-space: nowrap; /* 禁用文字换行 */
+}
+
+.up_div_right {
+    justify-content: space-around;
+    width: 30%;
+    right: 0;
+    position: absolute;
+    display: flex;
+}
+
+.up_button {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 25px;
+    border-radius: 10px; /* 圆角边框 */
+    background-color: rgb(38, 38, 38);
+    border: none; /* 无边框 */
+    color: rgb(127, 127, 127);
+    white-space: nowrap; /* 禁用文字换行 */
+}
+
+.up_button:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgb(48, 48, 48);
+}
+
+.line_div {
+    height: 1.3px; /* 线的厚度 */
+    width: 100%; /* 线的长度等于父容器的宽度 */
+    background-color: rgb(55, 55, 55);
+}
+
+.down_div {
+    width: 100%;
+    flex-grow: 1; /* 占据剩余部分 */
+    height: 0;
+    display: flex;
+    position: relative;
+    flex-direction: column; /* 纵向排列 */
+    align-items: center; /* 按钮在容器内居中 */
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+/* 定义滚动条， WebKit 内核 （如 Chrome 和 Safari），我没下火狐*/
+.down_div::-webkit-scrollbar { /* 整体 */
+    width: 10px;
+    height: 95%;
+}
+
+.down_div::-webkit-scrollbar-button { /* 方向按钮 */
+    width: 0;
+    height: 0;
+}
+
+.down_div::-webkit-scrollbar-track { /* 轨道 */
+    background: rgb(18, 18, 18); /* 轨道的背景色 */
+    border-radius: 6px; /* 轨道的圆角 */
+}
+
+.down_div::-webkit-scrollbar-thumb { /* 滑块 */
+    background: rgb(55, 55, 55); /* 滑块的背景色 */
+    border-radius: 6px; /* 滑块的圆角 */
+}
+
+.list_div {
+    margin: 10px 0;
+    height: auto;
+    width: 100%;
+    display: flex;
+    place-items: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 30px;
+    color: rgb(191, 191, 191);
+    justify-content: space-around;
+}
+
+.list_label {
+    width: 70%
+}
+
+.label_name_input { /*随笔名输入框*/
+    width: 100%;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 30px; /*字体大小*/
+    text-align: center; /*文字居中*/
+    border: none; /* 移除所有边框 */
+    outline: none; /* 移除聚焦时的默认蓝色边框 */
+    background-color: rgb(38, 38, 38);
+    color: rgb(220, 220, 220);
+    border-radius: 10px; /* 圆角边框 */
+}
+
+.list_button {
+    font-size: 25px;
+    border-radius: 10px; /* 圆角边框 */
+    background-color: rgb(38, 38, 38);
+    border: none; /* 无边框 */
+    color: rgb(127, 127, 127);
+    white-space: nowrap; /* 禁用文字换行 */
+    cursor: pointer;
+}
+
+.list_button:hover {
+    /*按钮悬停样式改变*/
+    background-color: rgb(48, 48, 48);
+}
