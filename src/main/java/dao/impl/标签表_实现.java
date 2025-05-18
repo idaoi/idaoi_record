@@ -5,10 +5,7 @@ import dao.entity.标签表;
 import dao.entity.随笔索引表;
 import dao.mapper.标签表_接口;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +32,7 @@ public class 标签表_实现 implements 标签表_接口 {
         String sql = "INSERT INTO 标签表 (账号,标签名) " +
                 "VALUES ( ?, ?)";
         try (Connection conn = MySQL_Account.getDataSource().getConnection();//获取链接
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {//创建PreparedStatement对象
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {//创建PreparedStatement对象
             pstmt.setInt(1, data.get账号());
             pstmt.setString(2, data.get标签名());
             pstmt.executeUpdate();// 执行提交

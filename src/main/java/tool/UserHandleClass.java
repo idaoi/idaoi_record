@@ -6,11 +6,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import dao.entity.*;
 import dao.impl.*;
+
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.json.JSONArray;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 import java.security.PublicKey;
 import java.sql.Blob;
 import java.sql.Timestamp;
@@ -494,6 +499,20 @@ public class UserHandleClass {
                             essaysContentTable_Impl.update随笔内容表(Essay_Num, this.requestData.get("essays_data"));
                             用户信息表_实现 userInformation_TableImpl = new 用户信息表_实现();// 获取用户信息表数据，修改字数
                             userInformation_TableImpl.Change字数(this.name, Integer.parseInt(this.requestData.get("essays_change_len")));
+                            // 修改文件
+                            String[] save_insertImage_Str;
+                            if (!Objects.equals(this.requestData.get("save_insertImage"), "")){
+                                save_insertImage_Str = this.requestData.get("save_insertImage").split("\\|");
+                            }
+                            else {
+                                save_insertImage_Str = new String[]{};
+                            }
+                            List<Integer> save_insertImage_Integer = new ArrayList<>();;
+                            for(String string : save_insertImage_Str){
+                                save_insertImage_Integer.add(Integer.parseInt(string));
+                            }
+                            文件表_实现 file_TableImpl = new 文件表_实现();
+                            file_TableImpl.delete文件表(Essay_Num,this.name,save_insertImage_Integer);
                             responseData.put("state", "OK");// 没问题（没做SQL影响的行数判断，如果输入数MB内容超限不一定可行，）
                             return responseData;
 
@@ -561,7 +580,7 @@ public class UserHandleClass {
     public Map<String, String> Change_Label() {
         Map<String, String> responseData = new HashMap<>();
         try {
-            if (this.get_detection_data()) {// 获取总览所需数据
+            if (this.get_detection_data()) {// 获取所需数据
                 String message_AES_key = this.requestData.get("secret_key");// 获取消息
                 String AES_key = ProcessPassword.decrypt_RSA(message_AES_key);// 解密消息
                 Instant clientTime = Instant.parse(AES_key.substring(AES_key.length() - 24));// 失效时间长24
@@ -599,6 +618,64 @@ public class UserHandleClass {
             Map<String, String> responseData_out = new HashMap<>();
             responseData.put("state", "other_error");//错误
             return responseData_out;
+        }
+    }
+
+    /**
+     * 提交图片，视频数据
+     */
+    public Map<String, String> Data_Handle(String type_Handl) {
+        Map<String, String> responseData = new HashMap<>();
+        try {
+            if (this.get_detection_data()) {// 获取所需数据
+                String message_AES_key = this.request.getParameter("secret_key");// 获取消息
+                String AES_key = ProcessPassword.decrypt_RSA(message_AES_key);// 解密消息
+                Instant clientTime = Instant.parse(AES_key.substring(AES_key.length() - 24));// 失效时间长24
+                AES_key = AES_key.substring(0, 36);// 密钥长36
+                String signature = this.request.getParameter("signature");// 签名
+                if (this.login_Detection(AES_key, clientTime, message_AES_key, signature) == 0) {// 消息没问题
+                    文件表_实现 file_TableImpl = new 文件表_实现();
+                    Part filePart = request.getPart("file");
+                    InputStream fileContent = filePart.getInputStream();
+                    byte[] encryptedBytes = readInputStreamToByteArray(fileContent);
+                    int essays = Integer.parseInt(request.getParameter("belong_Essays"));
+                    // 发现文件名若有中文没法正确识别url，取消使用用户发送来的文件名，改为生成随机字符串。
+                    String new_file_name = UUID.randomUUID().toString();
+                    int id = file_TableImpl.insert文件表(new 文件表(-1, new_file_name, filePart.getContentType(),
+                            encryptedBytes, this.name, essays));
+                    responseData.put("state", "OK");
+                    responseData.put("url", type_Handl + id + "|" + essays + "|" + new_file_name);
+                    return responseData;
+                }
+            }
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "other_error");//错误
+            return responseData_out;
+        } catch (Exception e) {
+            Map<String, String> responseData_out = new HashMap<>();
+            responseData.put("state", "other_error");//错误
+            return responseData_out;
+        }
+    }
+
+    /**
+     * 获取图片，视频数据
+     */
+    public byte[] Data_Obtain(int id, int essays, String name) {
+        try {
+            if (this.get_detection_data()) {
+                if (this.login_Detection() == 0) {
+                    文件表_实现 file_TableImpl = new 文件表_实现();
+                    文件表 file_data = file_TableImpl.get_文件表(id, this.name);
+                    if (file_data.get账号() == this.name && file_data.get所属随笔() == essays &&
+                            Objects.equals(file_data.get文件名(), name)) {
+                        return file_data.get文件内容();
+                    }
+                }
+            }
+            return new byte[]{};
+        } catch (Exception e) {
+            return new byte[]{};
         }
     }
 
@@ -757,6 +834,20 @@ public class UserHandleClass {
             }
         }
         return ipAddress;
+    }
+
+    /**
+     * 将InputStream转换为byte数组
+     */
+    private byte[] readInputStreamToByteArray(InputStream inputStream) throws IOException {
+        java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+        int nRead;
+        byte[] data = new byte[16384];
+        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+        buffer.flush();
+        return buffer.toByteArray();
     }
 
 }

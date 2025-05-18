@@ -1,3 +1,5 @@
 TokenMaintenance.java               -服务器启动后用来维持令牌
 Verify_Get_Server_Token.java        -用于post发放人机验证令牌，持有令牌可登录。
-Log_In_And_Register.java            -用于post登录或者注册。
+Log_In_And_Register.java            -用于post登录或者注册、修改密码，退出。
+Home_Page_Get_Data.java             -用于处理主页发来的数据获取请求，除了文件之外，都从这走
+Img_Video_Handle.java               -用于处理视频和图片的请求

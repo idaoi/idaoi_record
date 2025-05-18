@@ -210,12 +210,23 @@
                 window.parent.parent.AES_Key + now_Essays_Index["随笔号"] + "|" +
                 now_Essays_Index["加密"] + "|" + now_Essays_Index["加密内容"] + "|" + now_Essays_Index["标签"] + "|" +
                 formattedTime);// 密钥
+            let save_insertImage = editor.getElemsByType('image').map(item => item.src);
+            const regex = /^\/(Img_Obtain|Video_Obtain)\/(\d+)(?:\|\d+|\|.+)?$/;
+            // 过滤符合格式的字符
+            let firstNumbers = []
+            save_insertImage.forEach(str => {
+                const match = str.match(regex);
+                if (match) {
+                    firstNumbers.push(match[2]); // 提取第一个数字部分
+                }
+            });
             let send_data = {// 要发送过去的内容
                 verify_type: "post_Essays_Content",
                 secret_key: secret_key,// 密钥+随笔号+随笔名+加密+加密内容+时间
                 signature: signMessage(secret_key, window.parent.parent.client_privateKeyPem),//签名
                 essays_data: essays_data,// 随笔文本
                 essays_name: now_Essays_Index["随笔名"],// 太长放不到RSA加密中，放外面
+                save_insertImage :firstNumbers.join('|'),
                 essays_change_len: window.editor.getText().length - old_Essays_num + "",// 改变的随笔长度
             };
             $.ajax({
@@ -504,12 +515,11 @@
                     </fieldset>
 
                 </div>
-                <div class="content_div" id="editor_content_div"><!--内容-->
+                <div class="content_div" id="editor_content_div" style="flex-grow: 1;height: 0;"><!--内容-->
                     <div id="editor-toolbar"></div><!--工具栏区域-->
-                    <div style="flex-grow: 1;height: 0;">
-                        <div id="editor-text-area" class="editor-text-area"></div><!--文本内容区域-->
-                    </div>
-                    <div class="set_up_div">
+                    <div id="editor-text-area" class="editor-text-area" style="flex-grow: 1;height: 0;"></div>
+                    <!--文本内容区域-->
+                    <div class="set_up_div" style="background-color: rgb(22, 22, 22);">
                         <span>
                             <span>已输入字符:</span>
                             <span id="text_len">0</span>
@@ -575,18 +585,119 @@
             MENU_CONF: {
                 uploadImage: { // 上传图片的配置
                     fieldName: "idaoi_record_uploaded-image",
-                    server: "/post_userdata",// 服务器的接口
+                    server: "/Img_Handle",// 服务器的接口
                     // 单个文件的最大体积限制，默认为 2M
                     maxFileSize: 32 * 1024 * 1024, // 32M
+                    base64LimitSize:0,
                     // 最多可上传几个文件，默认为 100
                     maxNumberOfFiles: 1,
-                    meta: {
-                        verify_type: 'File_Content',
-                    },
-                    // 将 meta 拼接到 url 参数中，默认 false
-                    metaWithUrl: true,
                     // 超时时间，默认为 10 秒
                     timeout: 30 * 1000, // 30 秒
+                    // 自定义插入图片
+                    async customUpload(file, insertFn) {// 自定义上传
+                        const maxFileSize = 32 * 1024 * 1024; // 32M
+                        const fileReader = new FileReader();//读取文件内容
+                        fileReader.onload = function (e) {
+                            const fileContent = e.target.result;
+                            // 因为url难以处理加密内容，所以舍弃加密
+                            // const fileContentWordArray = CryptoJS.lib.WordArray.create(new Uint8Array(fileContent));
+                            // // 用用户默认AES密钥加密文件内容
+                            // const encryptedContent = AES_encrypt(fileContentWordArray,
+                            //     window.parent.default_AES_key, generateIV(window.parent.default_AES_key)).toString(CryptoJS.enc.Base64);
+                            // // 将加密后的内容转换为 Blob
+                            // const encryptedBlob = new Blob([encryptedContent], {type: file.type});
+                            // if (encryptedBlob.size > maxFileSize) {
+                            //     console.log('文件超过32MB');
+                            //     return;
+                            // }
+                            // const formData = new FormData();// 创建 FormData 并上传加密后的文件
+                            // formData.append('file', encryptedBlob, file.name); // 保留原始文件名
+                            const encryptedBlob = new Blob([fileContent], {type: file.type});
+                            if (encryptedBlob.size > maxFileSize) {
+                                console.log('文件超过32MB');
+                                return;
+                            }
+                            const formData = new FormData();// 创建 FormData 并上传加密后的文件
+                            formData.append('file', encryptedBlob, file.name); // 保留原始文件名
+                            const now = new Date();
+                            now.setMinutes(now.getMinutes() + 2);// 增加2min作为失效时间
+                            const formattedTime = now.toISOString(); // ISO 8601 格式：YYYY-MM-DDTHH:mm:ss.sssZ
+                            const secret_key = window.parent.parent.server_publicKeyPem.encrypt(// 如果为空，则是undefined
+                                window.parent.parent.AES_Key + formattedTime);// 密钥
+                            formData.append('secret_key', secret_key); // 密钥
+                            formData.append('signature', signMessage(secret_key, window.parent.parent.client_privateKeyPem)); // 签名
+                            formData.append('belong_Essays', now_Essays_Index["随笔号"]); // 所属随笔
+                            try {
+                                $.ajax({
+                                    url: '/Img_Handle',
+                                    type: 'POST',
+                                    data: formData,
+                                    timeout: 30*1000,// 超时事件30s
+                                    processData: false,
+                                    contentType: false,
+                                    cache: false,
+                                    success: function (response) {//请求成功的回调
+                                        // 上传成功后处理
+                                        insertFn(response.url, response.alt || '', response.href || '');
+                                    },
+                                });
+                            } catch (error) {
+                                console.error('上传失败:', error);
+                            }
+                        };
+                        fileReader.readAsArrayBuffer(file); // 读取文件内容为 ArrayBuffer
+                    },
+                },
+                uploadVideo: {
+                    fieldName: "idaoi_record_uploaded-video",
+                    server: "/Video_Handle",// 服务器的接口
+                    // 单个文件的最大体积限制，默认为 10M
+                    maxFileSize: 120 * 1024 * 1024, // 120M
+                    // 最多可上传几个文件，默认为 100
+                    maxNumberOfFiles: 1,
+                    // 超时时间，默认为 30 秒
+                    timeout: 120 * 1000, // 120 秒
+                    // 自定义插入视频
+                    async customUpload(file, insertFn) {// 自定义上传
+                        const maxFileSize = 120 * 1024 * 1024; // 120M
+                        const fileReader = new FileReader();//读取文件内容
+                        fileReader.onload = function (e) {
+                            const fileContent = e.target.result;
+                            const encryptedBlob = new Blob([fileContent], {type: file.type});
+                            if (encryptedBlob.size > maxFileSize) {
+                                console.log('文件超过32MB');
+                                return;
+                            }
+                            const formData = new FormData();// 创建 FormData 并上传加密后的文件
+                            formData.append('file', encryptedBlob, file.name); // 保留原始文件名
+                            const now = new Date();
+                            now.setMinutes(now.getMinutes() + 2);// 增加2min作为失效时间
+                            const formattedTime = now.toISOString(); // ISO 8601 格式：YYYY-MM-DDTHH:mm:ss.sssZ
+                            const secret_key = window.parent.parent.server_publicKeyPem.encrypt(// 如果为空，则是undefined
+                                window.parent.parent.AES_Key + formattedTime);// 密钥
+                            formData.append('secret_key', secret_key); // 密钥
+                            formData.append('signature', signMessage(secret_key, window.parent.parent.client_privateKeyPem)); // 签名
+                            formData.append('belong_Essays', now_Essays_Index["随笔号"]); // 所属随笔
+                            try {
+                                $.ajax({
+                                    url: '/Video_Handle',
+                                    type: 'POST',
+                                    data: formData,
+                                    timeout: 120*1000,// 超时事件120s
+                                    processData: false,
+                                    contentType: false,
+                                    cache: false,
+                                    success: function (response) {//请求成功的回调
+                                        // 上传成功后处理
+                                        insertFn(response.url, response.alt || '', response.href || '');
+                                    },
+                                });
+                            } catch (error) {
+                                console.error('上传失败:', error);
+                            }
+                        };
+                        fileReader.readAsArrayBuffer(file); // 读取文件内容为 ArrayBuffer
+                    },
                 }
             },
             onChange(editor) {
@@ -617,11 +728,18 @@
     // window.editor.enable();// 设置为可编辑
     // 工具栏只读模式下隐藏
     window.toolbar = E.createToolbar({
-        mode: 'simple',
+        mode: 'simple',// 简洁模式
         editor,
         selector: '#editor-toolbar',
-        config: {}
-    })
+        config: {
+            // 一个视频有点大，不给插
+            // insertKeys: {
+            //     index: 23, // 插入的位置，基于当前的 toolbarKeys
+            //     keys: ["insertVideo", "uploadVideo"]
+            // },
+        }
+    });
+
     Initialization_now_data()
 </script>
 </body>
